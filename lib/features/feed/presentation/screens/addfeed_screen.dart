@@ -1,4 +1,11 @@
+import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
+import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
+import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:cristalteacher/features/feed/domain/parameters/save_feed_parameter.dart';
+import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 class AddFeedScreen extends StatefulWidget {
@@ -10,20 +17,25 @@ class AddFeedScreen extends StatefulWidget {
 
 class _AddFeedScreenState extends State<AddFeedScreen> {
   final TextEditingController captionController = TextEditingController();
+  final List<Map<String, dynamic>> selectedClasses = [];
+  @override
+  void initState() {
+    super.initState();
 
-  final List<String> classes = [
-    "I A",
-    "II B",
-    "II C",
-    "I B",
-    "II A",
-    "II F",
-    "I G",
-    "II E",
-    "II I",
-  ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchTutorshipClasses();
+    });
+  }
 
-  final Set<String> selectedClasses = {"I A", "I B", "I G"};
+  void _fetchTutorshipClasses() {
+    context.read<AuthenticationCubit>().fetchTutorshipClass(
+      FetchTutorshipClassRequest(
+        accyear: AppData.accYear,
+        employeeId: AppData.employeeId,
+        userId: AppData.userId,
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -31,252 +43,336 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
     super.dispose();
   }
 
-  void toggleClass(String className, bool? value) {
-    setState(() {
-      if (value == true) {
-        selectedClasses.add(className);
-      } else {
-        selectedClasses.remove(className);
-      }
-    });
-  }
-
-  void chooseFile() {
-    debugPrint("Choose file tapped");
-  }
-
-  void saveFeed() {
-    debugPrint("Caption: ${captionController.text}");
-    debugPrint("Selected Classes: $selectedClasses");
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return BlocConsumer<FeedCubit, FeedState>(
+      listener: (context, state) {
+        if (state is SaveFeedSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.response.message ?? "Feed Saved Successfully",
+              ),
+            ),
+          );
 
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        surfaceTintColor: Colors.white,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          "Add  Feed",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+          Navigator.pop(context, true);
+        }
+
+        if (state is SaveFeedFailure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            surfaceTintColor: Colors.white,
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            title: const Text(
+              "Add  Feed",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
-        ),
-      ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onTap: chooseFile,
-              child: CustomPaint(
-                painter: DashedBorderPainter(
-                  color: Colors.black54,
-                  strokeWidth: 1.2,
-                  radius: 12,
-                  dashWidth: 7,
-                  dashSpace: 6,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(22, 12, 22, 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {},
+                  child: CustomPaint(
+                    painter: DashedBorderPainter(
+                      color: Colors.black54,
+                      strokeWidth: 1.2,
+                      radius: 12,
+                      dashWidth: 7,
+                      dashSpace: 6,
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: const Color(0xffeef3ff),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/Group (9).svg',
+                            // width: 14,
+                            // height: 14,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xff2E5CE9), // Your desired color
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            "Choose File",
+                            style: TextStyle(
+                              color: Color(0xff1f60ff),
+                              fontSize: 11,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Color(0xff1f60ff),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                child: Container(
+
+                const SizedBox(height: 17),
+
+                Container(
                   width: double.infinity,
                   height: 150,
+                  padding: const EdgeInsets.fromLTRB(12, 5, 12, 10),
                   decoration: BoxDecoration(
                     color: const Color(0xffeef3ff),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Stack(
                     children: [
-                      SvgPicture.asset(
-                        'assets/icons/Group (9).svg',
-                        // width: 14,
-                        // height: 14,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xff2E5CE9), // Your desired color
-                          BlendMode.srcIn,
+                      TextField(
+                        controller: captionController,
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        decoration: const InputDecoration(
+                          hintText: "Add A Caption",
+                          hintStyle: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.only(right: 28, top: 0),
+                        ),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
                         ),
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        "Choose File",
-                        style: TextStyle(
-                          color: Color(0xff1f60ff),
-                          fontSize: 11,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Color(0xff1f60ff),
-                          fontWeight: FontWeight.w500,
+
+                      Positioned(
+                        top: 5,
+                        right: 2,
+                        child: Container(
+                          width: 13,
+                          height: 13,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/icons/Group (8).svg',
+                              width: 14,
+                              height: 14,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 17),
+                const SizedBox(height: 23),
 
-            Container(
-              width: double.infinity,
-              height: 150,
-              padding: const EdgeInsets.fromLTRB(12, 5, 12, 10),
-              decoration: BoxDecoration(
-                color: const Color(0xffeef3ff),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Stack(
-                children: [
-                  TextField(
-                    controller: captionController,
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    decoration: const InputDecoration(
-                      hintText: "Add A Caption",
-                      hintStyle: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(right: 28, top: 0),
-                    ),
-                    style: const TextStyle(color: Colors.black, fontSize: 12),
+                const Text(
+                  "Select You Classes",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
 
-                  Positioned(
-                    top: 5,
-                    right: 2,
-                    child: Container(
-                      width: 13,
-                      height: 13,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          'assets/icons/Group (8).svg',
-                          width: 14,
-                          height: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                const SizedBox(height: 18),
 
-            const SizedBox(height: 23),
+                BlocBuilder<AuthenticationCubit, AuthenticationState>(
+                  builder: (context, state) {
+                    if (state is FetchTutorshipClassLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-            const Text(
-              "Select You Classes",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+                    if (state is FetchTutorshipClassSuccess) {
+                      final classes = state.response.data?.tutorshipClass ?? [];
+                      final List<Map<String, dynamic>> classList = [];
 
-            const SizedBox(height: 18),
+                      for (final standard in classes) {
+                        for (final division in standard.division ?? []) {
+                          classList.add({
+                            "standardId": standard.standardId,
+                            "standardName": standard.standard,
+                            "division": division,
+                          });
+                        }
+                      }
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: classList.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              mainAxisExtent: 46,
+                              crossAxisSpacing: 28,
+                            ),
+                        itemBuilder: (context, index) {
+                          final item = classList[index];
 
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: classes.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisExtent: 46,
-                crossAxisSpacing: 28,
-              ),
-              itemBuilder: (context, index) {
-                final className = classes[index];
-                final isSelected = selectedClasses.contains(className);
+                          final int standardId = item["standardId"];
+                          final String standardName = item["standardName"];
 
-                return Row(
-                  children: [
-                    SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: Checkbox(
-                        value: isSelected,
-                        onChanged: (value) {
-                          toggleClass(className, value);
-                        },
-                        activeColor: const Color(0xff8f83dc),
-                        checkColor: Colors.black,
-                        side: WidgetStateBorderSide.resolveWith((states) {
-                          if (states.contains(WidgetState.selected)) {
-                            return const BorderSide(
-                              color: Colors.black,
-                              width: 1.5,
-                            );
-                          }
-                          return const BorderSide(
-                            color: Colors.black54,
-                            width: 1,
+                          final DivisionDetails division =
+                              item["division"] as DivisionDetails;
+                          final isSelected = selectedClasses.any(
+                            (e) =>
+                                e["standardId"] == standardId &&
+                                e["divisionId"] == division.divisionId,
                           );
-                        }),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+
+                          return Row(
+                            children: [
+                              SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: Checkbox(
+                                  value: isSelected,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        selectedClasses.add({
+                                          "standardId": standardId,
+                                          "divisionId": division.divisionId,
+                                        });
+                                      } else {
+                                        selectedClasses.removeWhere(
+                                          (e) =>
+                                              e["standardId"] == standardId &&
+                                              e["divisionId"] ==
+                                                  division.divisionId,
+                                        );
+                                      }
+                                    });
+                                  },
+                                  activeColor: const Color(0xff8f83dc),
+                                  checkColor: Colors.black,
+                                ),
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              Expanded(
+                                child: Text(
+                                  "$standardName ${division.division}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isSelected
+                                        ? const Color(0xff7d6dff)
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+
+                    return const SizedBox();
+                  },
+                ),
+
+                const SizedBox(height: 28),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (captionController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please enter feed caption"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (selectedClasses.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please select at least one class"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      context.read<FeedCubit>().saveFeed(
+                        SaveFeedParameter(
+                          feedText: captionController.text.trim(),
+                          feedTarget: "Student",
+                          standardId: selectedClasses
+                              .map(
+                                (e) => FeedStandardParameter(
+                                  standardId: e["standardId"],
+                                  divisionId: e["divisionId"],
+                                ),
+                              )
+                              .toList(),
+                          userId: AppData.userId.toString(),
+                          branchId: AppData.branchId ?? 1,
+                          createdUser: AppData.userId.toString(),
+                          accYear: AppData.accYear ?? '1',
+                          feedMasterFiles: [],
                         ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff9b78dc),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-
-                    const SizedBox(width: 12),
-
-                    Text(
-                      className,
+                    child: const Text(
+                      "Save",
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isSelected
-                            ? const Color(0xff7d6dff)
-                            : Colors.black87,
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
-
-            const SizedBox(height: 28),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: saveFeed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff9b78dc),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: const Text(
-                  "Save",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

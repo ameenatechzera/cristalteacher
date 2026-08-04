@@ -29,4 +29,28 @@ class ApiConstants {
   static String getSaveAttendancePath(String baseUrl) {
     return '${baseUrl}save-StudentAttendanceMaster';
   }
+
+  static String getDiaryDetailsPath(String baseUrl) {
+    return '${baseUrl}classdiary';
+  }
+
+  static String getSaveDiaryPath(String baseUrl) {
+    return '${baseUrl}save-classdiary';
+  }
+
+  static String getFeedReportPath(String baseUrl) {
+    return '${baseUrl}feed-report';
+  }
+
+  static String getSaveFeedPath(String baseUrl) {
+    return '${baseUrl}save-feedmaster';
+  }
+
+  static String getAllMaterialsPath(String baseUrl) {
+    return '${baseUrl}get-all-materials';
+  }
+
+  static String saveMaterialPath(String baseUrl) {
+    return '${baseUrl}save-material';
+  }
 }

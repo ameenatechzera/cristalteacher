@@ -1,13 +1,17 @@
 import 'package:cristalteacher/core/errors/error_messege_model.dart';
 import 'package:cristalteacher/core/errors/exceptions.dart';
+import 'package:cristalteacher/core/models/master_response_model.dart';
+import 'package:cristalteacher/core/network/api_endpoints.dart';
 import 'package:cristalteacher/core/network/api_helper.dart';
 import 'package:cristalteacher/features/diary/data/models/diary_model.dart';
 import 'package:cristalteacher/features/diary/domain/parameters/fetch_diary_parameter.dart';
+import 'package:cristalteacher/features/diary/domain/parameters/save_diary_parameter.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:dio/dio.dart';
 
 abstract class DiaryRemoteDataSource {
   Future<DiaryResponseModel> fetchDiary(FetchDiaryParameter request);
+  Future<MasterResponseModel> saveDiary(SaveDiaryParameter params);
 }
 
 class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
@@ -39,7 +43,7 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
       }
 
       /// API URL
-      final url = '${baseUrl}classdiary';
+      final url = ApiConstants.getDiaryDetailsPath(baseUrl);
 
       print('📌 API URL');
       print('----------------------------------------------');
@@ -158,6 +162,47 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
       print(e);
       print(stackTrace);
       print('==============================================');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MasterResponseModel> saveDiary(SaveDiaryParameter params) async {
+    print('📘 Save Diary Called');
+    print('SaveDiaryParameter: ${params.toJson()}');
+
+    try {
+      final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("Base URL not set");
+      }
+
+      final url = ApiConstants.getSaveDiaryPath(baseUrl);
+
+      print("URL : $url");
+
+      final options = await ApiHelper.getAuthOptions(withToken: true);
+
+      final response = await dio.post(
+        url,
+        data: params.toJson(),
+        options: options,
+      );
+
+      print('📘 Status Code: ${response.statusCode}');
+      print('📘 Response Data: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return MasterResponseModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(response.data),
+        );
+      }
+    } catch (e, stackTrace) {
+      print('❌ Exception in saveDiary: $e');
+      print(stackTrace);
       rethrow;
     }
   }

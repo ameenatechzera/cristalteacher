@@ -1,10 +1,13 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/features/attendance/presentation/screens/attendance_report_screen.dart';
 import 'package:cristalteacher/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/diary_screen.dart';
+import 'package:cristalteacher/features/exams/presentation/screens/exam_screen.dart';
 import 'package:cristalteacher/features/feed/presentation/screens/feed_screen.dart';
 import 'package:cristalteacher/features/materials/presentation/screens/materials_screen.dart';
+import 'package:cristalteacher/features/timetable/presentation/screens/timetable_screen.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,7 +50,23 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
       subtitle: "Add Attendance",
       icon: Icons.folder_copy_rounded,
       color: const Color(0xFFDDF5C9),
-      page: AttendanceScreen(),
+      page: AttendanceReportScreen(),
+      // page: const SubjectPage(), // Use this if your material page is SubjectPage
+    ),
+    DashboardItem(
+      title: "Exam",
+      subtitle: "Exam Details",
+      icon: Icons.folder_copy_rounded,
+      color: const Color(0xFFDDF5C9),
+      page: ExamScreen(),
+      // page: const SubjectPage(), // Use this if your material page is SubjectPage
+    ),
+    DashboardItem(
+      title: "TimeTable",
+      subtitle: "Timetable",
+      icon: Icons.folder_copy_rounded,
+      color: const Color(0xFFDDF5C9),
+      page: TimeTableScreen(),
       // page: const SubjectPage(), // Use this if your material page is SubjectPage
     ),
   ];

@@ -38,6 +38,9 @@ dependencies:
   build_runner: ^2.4.9
   get_it: ^7.7.0
   shared_preferences: ^2.3.2
+  file_picker: ^10.3.1
+  path_provider: ^2.1.5
+  path: ^1.9.1
 
 
 
@@ -86,6 +89,14 @@ flutter:
     - assets/icons/Group (12).svg
     - assets/icons/Group 950.svg
     - assets/icons/Vector (2).svg
+    - assets/icons/Group (14).svg
+    - assets/icons/Group (15).svg
+    - assets/icons/Group 290 (1).svg
+    - assets/icons/Group (16).svg
+    - assets/icons/Group 951.svg
+    - assets/icons/Group (17).svg
+    - assets/icons/Group (18).svg
+    - assets/icons/Group (19).svg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

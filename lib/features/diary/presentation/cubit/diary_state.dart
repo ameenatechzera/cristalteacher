@@ -22,3 +22,17 @@ final class DiaryFailure extends DiaryState {
 
   const DiaryFailure(this.message);
 }
+
+class SaveDiaryLoading extends DiaryState {}
+
+class SaveDiarySuccess extends DiaryState {
+  final MasterResponseModel response;
+
+  const SaveDiarySuccess(this.response);
+}
+
+class SaveDiaryFailure extends DiaryState {
+  final String message;
+
+  const SaveDiaryFailure(this.message);
+}

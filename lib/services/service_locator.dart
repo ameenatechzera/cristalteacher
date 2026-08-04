@@ -17,7 +17,20 @@ import 'package:cristalteacher/features/diary/data/datasources/diary_remote_data
 import 'package:cristalteacher/features/diary/data/repositories/diary_repository_impl.dart';
 import 'package:cristalteacher/features/diary/domain/repositories/diary_repository.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/fetch_diary_usecase.dart';
+import 'package:cristalteacher/features/diary/domain/usecases/save_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
+import 'package:cristalteacher/features/feed/data/datasources/feed_remote_data_source.dart';
+import 'package:cristalteacher/features/feed/data/repositories/feed_repository_impl.dart';
+import 'package:cristalteacher/features/feed/domain/repository/feed_repository.dart';
+import 'package:cristalteacher/features/feed/domain/usecases/fetch_feed_usecase.dart';
+import 'package:cristalteacher/features/feed/domain/usecases/save_feed_usecase.dart';
+import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
+import 'package:cristalteacher/features/materials/data/datasources/materials_remote_data_source.dart';
+import 'package:cristalteacher/features/materials/data/repositories/material_repository_impl.dart.dart';
+import 'package:cristalteacher/features/materials/domain/repository/material_repository.dart';
+import 'package:cristalteacher/features/materials/domain/usecases/fetch_material_usecase.dart';
+import 'package:cristalteacher/features/materials/domain/usecases/save_material_usecase.dart';
+import 'package:cristalteacher/features/materials/presentation/cubit/material_cubit.dart';
 import 'package:get_it/get_it.dart';
 
 final sl = GetIt.instance;
@@ -52,9 +65,12 @@ Future<void> init() async {
     () => AuthRemoteDataSourceImpl(),
   );
 
-  sl.registerFactory<DiaryCubit>(() => DiaryCubit(fetchDiaryUseCase: sl()));
+  sl.registerFactory<DiaryCubit>(
+    () => DiaryCubit(fetchDiaryUseCase: sl(), saveDiaryUseCase: sl()),
+  );
 
   sl.registerLazySingleton<FetchDiaryUseCase>(() => FetchDiaryUseCase(sl()));
+  sl.registerLazySingleton<SaveDiaryUseCase>(() => SaveDiaryUseCase(sl()));
 
   sl.registerLazySingleton<DiaryRepository>(() => DiaryRepositoryImpl(sl()));
 
@@ -80,5 +96,39 @@ Future<void> init() async {
 
   sl.registerLazySingleton<AttendanceRemoteDataSource>(
     () => AttendanceRemoteDataSourceImpl(),
+  );
+
+  /// ================= Feed =================
+
+  sl.registerFactory(
+    () => FeedCubit(fetchFeedUseCase: sl(), saveFeedUseCase: sl()),
+  );
+
+  sl.registerLazySingleton(() => FetchFeedUseCase(sl()));
+  sl.registerLazySingleton(() => SaveFeedUseCase(sl()));
+
+  sl.registerLazySingleton<FeedRepository>(() => FeedRepositoryImpl(sl()));
+
+  sl.registerLazySingleton<FeedRemoteDataSource>(
+    () => FeedRemoteDataSourceImpl(),
+  );
+
+  /// Cubit
+  sl.registerFactory(
+    () => MaterialCubit(fetchMaterialUseCase: sl(), saveMaterialUseCase: sl()),
+  );
+
+  /// UseCase
+  sl.registerLazySingleton(() => FetchMaterialUseCase(sl()));
+  sl.registerLazySingleton(() => SaveMaterialUseCase(sl()));
+
+  /// Repository
+  sl.registerLazySingleton<MaterialRepository>(
+    () => MaterialRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  /// Remote Data Source
+  sl.registerLazySingleton<MaterialRemoteDataSource>(
+    () => MaterialRemoteDataSourceImpl(),
   );
 }

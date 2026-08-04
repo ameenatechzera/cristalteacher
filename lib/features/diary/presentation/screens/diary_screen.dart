@@ -43,8 +43,8 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
       divisionId: selectedDivisionId,
       accyear: AppData.accYear!,
       fromDate: "2026-07-14",
-      toDate: "2026-07-14",
-      userId: AppData.userId.toString(),
+      toDate: "2026-07-31",
+      userId: '1',
     );
 
     debugPrint('====================================');
@@ -55,13 +55,13 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
     context.read<DiaryCubit>().fetchDiary(request);
   }
 
-  String _formatApiDate(DateTime date) {
-    final year = date.year.toString();
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
+  // String _formatApiDate(DateTime date) {
+  //   final year = date.year.toString();
+  //   final month = date.month.toString().padLeft(2, '0');
+  //   final day = date.day.toString().padLeft(2, '0');
 
-    return '$year-$month-$day';
-  }
+  //   return '$year-$month-$day';
+  // }
 
   void _applyFilter({
     int? standardId,
