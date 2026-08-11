@@ -222,6 +222,248 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
   //     rethrow;
   //   }
   // }
+  // @override
+  // Future<MasterResponseModel> saveDiary(SaveDiaryParameter params) async {
+  //   print('');
+  //   print('==========================================');
+  //   print('🟢 SAVE DIARY START');
+  //   print('==========================================');
+
+  //   try {
+  //     final pref = SharedPreferenceHelper();
+
+  //     final baseUrl = await pref.getBaseUrl();
+  //     final dbName = await pref.getDatabaseName();
+  //     final token = await pref.getToken() ?? '';
+
+  //     if (baseUrl == null || baseUrl.isEmpty) {
+  //       throw Exception('Base URL not set');
+  //     }
+
+  //     if (token.isEmpty) {
+  //       throw Exception('Token missing! Please login again.');
+  //     }
+
+  //     final url = ApiConstants.getSaveDiaryPath(baseUrl);
+
+  //     print('🟢 Base URL: $baseUrl');
+  //     print('🟢 DB Name: $dbName');
+  //     print('🟢 API URL: $url');
+
+  //     // ============================================================
+  //     // NORMAL FIELDS
+  //     // ============================================================
+
+  //     final Map<String, dynamic> data = {
+  //       'AccYear': params.accYear,
+  //       'StandardId': params.standardId,
+  //       'DivisionId': params.divisionId,
+  //       'SubjectId': params.subjectId,
+  //       'EmployeeId': params.employeeId,
+  //       'diaryType': params.diaryType,
+  //       'diaryTitle': params.diaryTitle,
+  //       'Description': params.description,
+  //       'diaryDate': params.diaryDate,
+  //       'dueDate': params.dueDate,
+  //       'isActive': params.isActive,
+  //       'isFavourite': params.isFavourite,
+  //       'branchId': params.branchId,
+  //       'CreatedUser': params.createdUser,
+  //       'videoUrl': params.videoUrl,
+  //     };
+
+  //     print('🟢 ===== FORM FIELDS =====');
+
+  //     data.forEach((key, value) {
+  //       print('$key : $value');
+  //     });
+
+  //     // ============================================================
+  //     // FORMDATA
+  //     // ============================================================
+
+  //     final formData = FormData.fromMap(data);
+  //     for (final field in formData.fields) {
+  //       print('FIELD => ${field.key} : ${field.value}');
+  //     }
+
+  //     for (final file in formData.files) {
+  //       print(
+  //         'FILE => key: ${file.key}, '
+  //         'filename: ${file.value.filename}, '
+  //         'contentType: ${file.value.contentType}',
+  //       );
+  //     }
+  //     // ============================================================
+  //     // FILES
+  //     // ============================================================
+
+  //     print('🟡 Files Found: ${params.files.length}');
+
+  //     for (int i = 0; i < params.files.length; i++) {
+  //       final fileString = params.files[i];
+
+  //       if (fileString.isEmpty) {
+  //         continue;
+  //       }
+
+  //       print('🟡 Processing File ${i + 1}');
+  //       print('🟡 File Length: ${fileString.length}');
+
+  //       String base64String = fileString;
+  //       String fileName = 'diary_file_${i + 1}.jpg';
+
+  //       // ==========================================================
+  //       // DATA URI
+  //       // ==========================================================
+
+  //       if (fileString.startsWith('data:')) {
+  //         final commaIndex = fileString.indexOf(',');
+
+  //         if (commaIndex == -1) {
+  //           throw Exception('Invalid Base64 image format');
+  //         }
+
+  //         final header = fileString.substring(0, commaIndex);
+
+  //         base64String = fileString.substring(commaIndex + 1);
+
+  //         print('🟡 Header: $header');
+
+  //         if (header.contains('image/png')) {
+  //           fileName = 'diary_file_${i + 1}.png';
+  //         } else if (header.contains('image/webp')) {
+  //           fileName = 'diary_file_${i + 1}.webp';
+  //         } else {
+  //           fileName = 'diary_file_${i + 1}.jpg';
+  //         }
+  //       }
+
+  //       // ==========================================================
+  //       // BASE64 → BYTES
+  //       // ==========================================================
+
+  //       final bytes = base64Decode(base64String);
+
+  //       print('🟢 Decoded Bytes: ${bytes.length}');
+  //       print('🟢 File Name: $fileName');
+
+  //       // ==========================================================
+  //       // ADD FILE
+  //       // ==========================================================
+
+  //       formData.files.add(
+  //         MapEntry(
+  //           'files[]',
+  //           MultipartFile.fromBytes(bytes, filename: fileName),
+  //         ),
+  //       );
+
+  //       print('🟢 File added successfully');
+  //     }
+
+  //     // ============================================================
+  //     // DEBUG
+  //     // ============================================================
+
+  //     print('');
+  //     print('==========================================');
+  //     print('🟢 FORMDATA FIELDS');
+  //     print('==========================================');
+
+  //     for (final field in formData.fields) {
+  //       print('${field.key} : ${field.value}');
+  //     }
+
+  //     print('');
+  //     print('==========================================');
+  //     print('🟡 FORMDATA FILES');
+  //     print('==========================================');
+
+  //     for (final file in formData.files) {
+  //       print('${file.key} : ${file.value.filename}');
+  //     }
+
+  //     // ============================================================
+  //     // API OPTIONS
+  //     // ============================================================
+
+  //     final options = Options(
+  //       contentType: 'multipart/form-data',
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //         'X-Database-Name': dbName,
+  //       },
+  //     );
+
+  //     // ============================================================
+  //     // API CALL
+  //     // ============================================================
+
+  //     print('');
+  //     print('==========================================');
+  //     print('🟢 CALLING SAVE DIARY API');
+  //     print('==========================================');
+
+  //     final response = await dio.post(url, data: formData, options: options);
+
+  //     // ============================================================
+  //     // RESPONSE
+  //     // ============================================================
+
+  //     print('');
+  //     print('==========================================');
+  //     print('🟢 SAVE DIARY RESPONSE');
+  //     print('==========================================');
+
+  //     print('Status Code: ${response.statusCode}');
+  //     print('Response Data: ${response.data}');
+
+  //     print('==========================================');
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       return MasterResponseModel.fromJson(response.data);
+  //     }
+
+  //     throw ServerException(
+  //       errorMessageModel: ErrorMessageModel.fromJson(response.data),
+  //     );
+  //   } on DioException catch (e, stackTrace) {
+  //     print('');
+  //     print('==========================================');
+  //     print('❌ DIO ERROR');
+  //     print('==========================================');
+
+  //     print('Message : ${e.message}');
+  //     print('Status  : ${e.response?.statusCode}');
+  //     print('Response: ${e.response?.data}');
+  //     print('URL     : ${e.requestOptions.uri}');
+
+  //     print('==========================================');
+  //     print(stackTrace);
+
+  //     if (e.response?.data is Map<String, dynamic>) {
+  //       throw ServerException(
+  //         errorMessageModel: ErrorMessageModel.fromJson(e.response!.data),
+  //       );
+  //     }
+
+  //     rethrow;
+  //   } catch (e, stackTrace) {
+  //     print('');
+  //     print('==========================================');
+  //     print('❌ ERROR IN SAVE DIARY');
+  //     print('==========================================');
+
+  //     print(e);
+  //     print(stackTrace);
+
+  //     print('==========================================');
+
+  //     rethrow;
+  //   }
+  // }
   @override
   Future<MasterResponseModel> saveDiary(SaveDiaryParameter params) async {
     print('');
@@ -283,20 +525,15 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
       // ============================================================
 
       final formData = FormData.fromMap(data);
-      for (final field in formData.fields) {
-        print('FIELD => ${field.key} : ${field.value}');
-      }
 
-      for (final file in formData.files) {
-        print(
-          'FILE => key: ${file.key}, '
-          'filename: ${file.value.filename}, '
-          'contentType: ${file.value.contentType}',
-        );
-      }
       // ============================================================
       // FILES
       // ============================================================
+
+      print('');
+      print('==========================================');
+      print('🟡 PROCESSING FILES');
+      print('==========================================');
 
       print('🟡 Files Found: ${params.files.length}');
 
@@ -304,14 +541,23 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
         final fileString = params.files[i];
 
         if (fileString.isEmpty) {
+          print('⚠️ File ${i + 1} is empty. Skipping.');
           continue;
         }
 
+        print('');
+        print('------------------------------------------');
         print('🟡 Processing File ${i + 1}');
+        print('------------------------------------------');
+
         print('🟡 File Length: ${fileString.length}');
 
         String base64String = fileString;
-        String fileName = 'diary_file_${i + 1}.jpg';
+
+        // DO NOT default to jpg
+        String fileName = 'diary_file_${i + 1}';
+
+        String? contentType;
 
         // ==========================================================
         // DATA URI
@@ -321,22 +567,79 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
           final commaIndex = fileString.indexOf(',');
 
           if (commaIndex == -1) {
-            throw Exception('Invalid Base64 image format');
+            throw Exception('Invalid Base64 file format for file ${i + 1}');
           }
 
           final header = fileString.substring(0, commaIndex);
 
           base64String = fileString.substring(commaIndex + 1);
 
-          print('🟡 Header: $header');
+          print('🟡 File Header: $header');
 
-          if (header.contains('image/png')) {
+          // ========================================================
+          // IMAGES
+          // ========================================================
+
+          if (header.contains('image/jpeg')) {
+            fileName = 'diary_file_${i + 1}.jpg';
+            contentType = 'image/jpeg';
+          } else if (header.contains('image/png')) {
             fileName = 'diary_file_${i + 1}.png';
+            contentType = 'image/png';
           } else if (header.contains('image/webp')) {
             fileName = 'diary_file_${i + 1}.webp';
-          } else {
-            fileName = 'diary_file_${i + 1}.jpg';
+            contentType = 'image/webp';
           }
+          // ========================================================
+          // AUDIO
+          // ========================================================
+          else if (header.contains('audio/mpeg')) {
+            fileName = 'diary_file_${i + 1}.mp3';
+            contentType = 'audio/mpeg';
+          } else if (header.contains('audio/mp3')) {
+            fileName = 'diary_file_${i + 1}.mp3';
+            contentType = 'audio/mpeg';
+          } else if (header.contains('audio/mp4')) {
+            fileName = 'diary_file_${i + 1}.m4a';
+            contentType = 'audio/mp4';
+          } else if (header.contains('audio/x-m4a')) {
+            fileName = 'diary_file_${i + 1}.m4a';
+            contentType = 'audio/x-m4a';
+          } else if (header.contains('audio/wav')) {
+            fileName = 'diary_file_${i + 1}.wav';
+            contentType = 'audio/wav';
+          } else if (header.contains('audio/x-wav')) {
+            fileName = 'diary_file_${i + 1}.wav';
+            contentType = 'audio/wav';
+          } else if (header.contains('audio/aac')) {
+            fileName = 'diary_file_${i + 1}.aac';
+            contentType = 'audio/aac';
+          } else if (header.contains('audio/ogg')) {
+            fileName = 'diary_file_${i + 1}.ogg';
+            contentType = 'audio/ogg';
+          } else if (header.contains('audio/amr')) {
+            fileName = 'diary_file_${i + 1}.amr';
+            contentType = 'audio/amr';
+          } else {
+            throw Exception(
+              'Unsupported file type.\n'
+              'File: ${i + 1}\n'
+              'Header: $header',
+            );
+          }
+        } else {
+          print('⚠️ No DATA URI header found.');
+
+          print(
+            '⚠️ The Base64 does not contain '
+            'the file type information.',
+          );
+
+          // We don't assume JPG anymore.
+          //
+          // If the recorder sends raw Base64 without
+          // "data:audio/...", the actual file type must
+          // be supplied by the code creating params.files.
         }
 
         // ==========================================================
@@ -347,15 +650,22 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
 
         print('🟢 Decoded Bytes: ${bytes.length}');
         print('🟢 File Name: $fileName');
+        print('🟢 Content Type: $contentType');
 
         // ==========================================================
-        // ADD FILE
+        // ADD FILE TO FORMDATA
         // ==========================================================
 
         formData.files.add(
           MapEntry(
             'files[]',
-            MultipartFile.fromBytes(bytes, filename: fileName),
+            MultipartFile.fromBytes(
+              bytes,
+              filename: fileName,
+              // contentType: contentType != null
+              //     ? MediaType.parse(contentType)
+              //     : null,
+            ),
           ),
         );
 
@@ -363,7 +673,7 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
       }
 
       // ============================================================
-      // DEBUG
+      // DEBUG FORMDATA
       // ============================================================
 
       print('');
@@ -381,7 +691,11 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
       print('==========================================');
 
       for (final file in formData.files) {
-        print('${file.key} : ${file.value.filename}');
+        print(
+          'Key: ${file.key} | '
+          'Filename: ${file.value.filename} | '
+          'ContentType: ${file.value.contentType}',
+        );
       }
 
       // ============================================================
@@ -465,65 +779,3 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
     }
   }
 }
-//   @override
-//   Future<DiaryResponseModel> fetchDiary(FetchDiaryParameter request) async {
-//     print('📘 Fetch Diary Called');
-//     print('📘 Params: ${request.toJson()}');
-
-//     try {
-//       final baseUrl = await SharedPreferenceHelper().getBaseUrl();
-
-//       if (baseUrl == null || baseUrl.isEmpty) {
-//         throw Exception('Base URL not set');
-//       }
-
-//       final url = '${baseUrl}classdiary';
-
-//       print('📘 Base URL: $baseUrl');
-//       print('📘 URL: $url');
-
-//       final options = await ApiHelper.getAuthOptions(withToken: true);
-
-//       print('📘 Headers: ${options.headers}');
-
-//       final response = await dio.post(
-//         url,
-//         data: request.toJson(),
-//         options: options,
-//       );
-
-//       print('📘 Status Code: ${response.statusCode}');
-//       print('📘 Response Data: ${response.data}');
-
-//       if (response.statusCode == 200 || response.statusCode == 201) {
-//         return DiaryResponseModel.fromJson(
-//           response.data as Map<String, dynamic>,
-//         );
-//       }
-
-//       throw ServerException(
-//         errorMessageModel: ErrorMessageModel.fromJson(response.data),
-//       );
-//     } on DioException catch (e, stackTrace) {
-//       print('❌ DioException in Fetch Diary');
-//       print('❌ Message: ${e.message}');
-//       print('❌ Status: ${e.response?.statusCode}');
-//       print('❌ Data: ${e.response?.data}');
-//       print(stackTrace);
-
-//       if (e.response?.data is Map<String, dynamic>) {
-//         throw ServerException(
-//           errorMessageModel: ErrorMessageModel.fromJson(
-//             e.response!.data as Map<String, dynamic>,
-//           ),
-//         );
-//       }
-
-//       rethrow;
-//     } catch (e, stackTrace) {
-//       print('❌ Exception in Fetch Diary: $e');
-//       print(stackTrace);
-//       rethrow;
-//     }
-//   }
-// }

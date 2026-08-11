@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/core/utils/date_utils_helper.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
@@ -626,39 +629,501 @@ class _CircleActionButton extends StatelessWidget {
   }
 }
 
-class _AttachmentBox extends StatelessWidget {
-  final String fileUrl;
+// class _AttachmentBox extends StatelessWidget {
+//   final String fileUrl;
 
-  const _AttachmentBox({required this.fileUrl});
+//   const _AttachmentBox({required this.fileUrl});
+
+//   String get fileName {
+//     final uri = Uri.tryParse(fileUrl);
+
+//     if (uri != null && uri.pathSegments.isNotEmpty) {
+//       return uri.pathSegments.last;
+//     }
+
+//     return 'Attachment';
+//   }
+
+//   String get extension {
+//     final parts = fileName.split('.');
+
+//     if (parts.length < 2) {
+//       return 'FILE';
+//     }
+
+//     return parts.last.toUpperCase();
+//   }
+
+//   bool get isImage {
+//     final ext = extension.toLowerCase();
+
+//     return ext == 'jpg' || ext == 'jpeg' || ext == 'png' || ext == 'webp';
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       height: 62,
+//       padding: const EdgeInsets.symmetric(horizontal: 13),
+//       decoration: BoxDecoration(
+//         color: const Color(0xffFAF7FF),
+//         borderRadius: BorderRadius.circular(15),
+//         border: Border.all(color: const Color(0xff111111), width: 1),
+//       ),
+//       child: Row(
+//         children: [
+//           Container(
+//             width: 29,
+//             height: 29,
+//             decoration: BoxDecoration(
+//               color: const Color(0xffEF3340),
+//               borderRadius: BorderRadius.circular(5),
+//             ),
+//             alignment: Alignment.center,
+//             child: Text(
+//               isImage ? 'IMG' : extension,
+//               maxLines: 1,
+//               style: const TextStyle(
+//                 fontSize: 6,
+//                 color: Colors.white,
+//                 fontWeight: FontWeight.w900,
+//               ),
+//             ),
+//           ),
+
+//           const SizedBox(width: 13),
+
+//           Expanded(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   fileName,
+//                   maxLines: 1,
+//                   overflow: TextOverflow.ellipsis,
+//                   style: const TextStyle(
+//                     fontSize: 10,
+//                     color: Colors.black,
+//                     fontWeight: FontWeight.w700,
+//                   ),
+//                 ),
+
+//                 const SizedBox(height: 5),
+
+//                 Text(
+//                   extension,
+//                   style: const TextStyle(fontSize: 7, color: Color(0xff666666)),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           const Icon(
+//             Icons.file_download_outlined,
+//             size: 22,
+//             color: Colors.black,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+class _AttachmentBox extends StatefulWidget {
+  final String fileUrl;
+  final String baseUrl;
+
+  const _AttachmentBox({required this.fileUrl, this.baseUrl = ''});
+
+  @override
+  State<_AttachmentBox> createState() => _AttachmentBoxState();
+}
+
+class _AttachmentBoxState extends State<_AttachmentBox> {
+  AudioPlayer? _audioPlayer;
+
+  bool _isPlaying = false;
+  bool _isLoadingAudio = false;
+
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
+
+  String get cleanedPath {
+    return widget.fileUrl.trim().replaceAll('\\', '/');
+  }
 
   String get fileName {
-    final uri = Uri.tryParse(fileUrl);
+    final uri = Uri.tryParse(cleanedPath);
+    final segments = uri?.pathSegments ?? [];
 
-    if (uri != null && uri.pathSegments.isNotEmpty) {
-      return uri.pathSegments.last;
+    if (segments.isNotEmpty) {
+      return Uri.decodeComponent(segments.last);
     }
 
     return 'Attachment';
   }
 
   String get extension {
-    final parts = fileName.split('.');
+    final uri = Uri.tryParse(cleanedPath);
+    final path = uri?.path ?? cleanedPath;
+    final dotIndex = path.lastIndexOf('.');
 
-    if (parts.length < 2) {
+    if (dotIndex == -1) {
       return 'FILE';
     }
 
-    return parts.last.toUpperCase();
+    return path.substring(dotIndex + 1).toUpperCase();
   }
 
   bool get isImage {
-    final ext = extension.toLowerCase();
+    return const {
+      'JPG',
+      'JPEG',
+      'PNG',
+      'WEBP',
+      'GIF',
+      'BMP',
+    }.contains(extension);
+  }
 
-    return ext == 'jpg' || ext == 'jpeg' || ext == 'png' || ext == 'webp';
+  bool get isAudio {
+    return const {
+      'MP3',
+      'M4A',
+      'AAC',
+      'WAV',
+      'OGG',
+      'OPUS',
+      'FLAC',
+      'WEBM',
+      'AMR',
+      '3GP',
+    }.contains(extension);
+  }
+
+  bool get isNetworkFile {
+    return cleanedPath.startsWith('http://') ||
+        cleanedPath.startsWith('https://');
+  }
+
+  String get completeUrl {
+    if (isNetworkFile) {
+      return cleanedPath;
+    }
+
+    if (widget.baseUrl.trim().isEmpty) {
+      return cleanedPath;
+    }
+
+    final base = widget.baseUrl.endsWith('/')
+        ? widget.baseUrl
+        : '${widget.baseUrl}/';
+
+    final path = cleanedPath.startsWith('/')
+        ? cleanedPath.substring(1)
+        : cleanedPath;
+
+    return Uri.parse(base).resolve(path).toString();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (isAudio) {
+      _initializeAudioPlayer();
+    }
+  }
+
+  void _initializeAudioPlayer() {
+    _audioPlayer = AudioPlayer();
+
+    _audioPlayer!.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+        _isLoadingAudio = false;
+      });
+    });
+
+    _audioPlayer!.onDurationChanged.listen((duration) {
+      if (!mounted) return;
+
+      setState(() {
+        _duration = duration;
+      });
+    });
+
+    _audioPlayer!.onPositionChanged.listen((position) {
+      if (!mounted) return;
+
+      setState(() {
+        _position = position;
+      });
+    });
+
+    _audioPlayer!.onPlayerComplete.listen((_) {
+      if (!mounted) return;
+
+      setState(() {
+        _isPlaying = false;
+        _position = Duration.zero;
+      });
+    });
+  }
+
+  Future<void> _toggleAudio() async {
+    final player = _audioPlayer;
+
+    if (player == null || _isLoadingAudio) {
+      return;
+    }
+
+    try {
+      if (_isPlaying) {
+        await player.pause();
+        return;
+      }
+
+      setState(() {
+        _isLoadingAudio = true;
+      });
+
+      if (_position > Duration.zero && _position < _duration) {
+        await player.resume();
+      } else if (isNetworkFile || widget.baseUrl.isNotEmpty) {
+        await player.play(
+          UrlSource(completeUrl),
+
+          // Add headers here if the server requires authentication:
+          // headers: {
+          //   'Authorization': 'Bearer $token',
+          // },
+        );
+      } else {
+        final file = File(cleanedPath);
+
+        if (!file.existsSync()) {
+          throw Exception('Local audio file not found');
+        }
+
+        await player.play(DeviceFileSource(cleanedPath));
+      }
+    } catch (error) {
+      debugPrint('Audio playback error: $error');
+      debugPrint('Audio URL: $completeUrl');
+
+      if (mounted) {
+        setState(() {
+          _isLoadingAudio = false;
+          _isPlaying = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to play this audio recording')),
+        );
+      }
+    }
+  }
+
+  Future<void> _seekAudio(double milliseconds) async {
+    await _audioPlayer?.seek(Duration(milliseconds: milliseconds.round()));
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isImage) {
+      return _buildImageAttachment();
+    }
+
+    if (isAudio) {
+      return _buildAudioAttachment();
+    }
+
+    return _buildDocumentAttachment();
+  }
+
+  Widget _buildImageAttachment() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: _buildImage(),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          fileName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 9, color: Color(0xff555555)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImage() {
+    if (isNetworkFile || widget.baseUrl.isNotEmpty) {
+      return Image.network(
+        completeUrl,
+        width: double.infinity,
+        height: 180,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) {
+            return child;
+          }
+
+          return _buildImagePlaceholder(
+            const CircularProgressIndicator(strokeWidth: 2),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('Image URL: $completeUrl');
+          debugPrint('Image error: $error');
+
+          return _buildImagePlaceholder(
+            const Icon(Icons.broken_image_outlined),
+          );
+        },
+      );
+    }
+
+    final file = File(cleanedPath);
+
+    if (!file.existsSync()) {
+      return _buildImagePlaceholder(const Icon(Icons.broken_image_outlined));
+    }
+
+    return Image.file(
+      file,
+      width: double.infinity,
+      height: 180,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) {
+        return _buildImagePlaceholder(const Icon(Icons.broken_image_outlined));
+      },
+    );
+  }
+
+  Widget _buildImagePlaceholder(Widget child) {
+    return Container(
+      width: double.infinity,
+      height: 180,
+      color: const Color(0xffEEE8FA),
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Widget _buildAudioAttachment() {
+    final maximum = _duration.inMilliseconds > 0
+        ? _duration.inMilliseconds.toDouble()
+        : 1.0;
+
+    final current = _position.inMilliseconds
+        .clamp(0, maximum.toInt())
+        .toDouble();
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: const Color(0xffFAF7FF),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xff111111), width: 1),
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: _toggleAudio,
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: Color(0xff8665E4),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: _isLoadingAudio
+                  ? const SizedBox(
+                      width: 17,
+                      height: 17,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      _isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 25,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fileName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(
+                  height: 23,
+                  child: Slider(
+                    value: current,
+                    max: maximum,
+                    activeColor: const Color(0xff8665E4),
+                    inactiveColor: const Color(0xffDDD5F2),
+                    onChanged: _duration == Duration.zero ? null : _seekAudio,
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDuration(_position),
+                      style: const TextStyle(
+                        fontSize: 8,
+                        color: Color(0xff666666),
+                      ),
+                    ),
+                    Text(
+                      _formatDuration(_duration),
+                      style: const TextStyle(
+                        fontSize: 8,
+                        color: Color(0xff666666),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 5),
+          const Icon(Icons.mic_rounded, color: Color(0xff8665E4), size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentAttachment() {
     return Container(
       height: 62,
       padding: const EdgeInsets.symmetric(horizontal: 13),
@@ -670,60 +1135,43 @@ class _AttachmentBox extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 29,
-            height: 29,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: const Color(0xffEF3340),
               borderRadius: BorderRadius.circular(5),
             ),
             alignment: Alignment.center,
             child: Text(
-              isImage ? 'IMG' : extension,
+              extension,
               maxLines: 1,
               style: const TextStyle(
-                fontSize: 6,
+                fontSize: 7,
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
               ),
             ),
           ),
-
           const SizedBox(width: 13),
-
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  fileName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  extension,
-                  style: const TextStyle(fontSize: 7, color: Color(0xff666666)),
-                ),
-              ],
+            child: Text(
+              fileName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
             ),
           ),
-
-          const Icon(
-            Icons.file_download_outlined,
-            size: 22,
-            color: Colors.black,
-          ),
+          const Icon(Icons.file_download_outlined, size: 22),
         ],
       ),
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds.remainder(60);
+
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
 
