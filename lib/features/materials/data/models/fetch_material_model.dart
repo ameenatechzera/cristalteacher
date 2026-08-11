@@ -1,12 +1,18 @@
 import 'package:cristalteacher/features/materials/domain/entities/fetch_material_entity.dart';
 
 class FetchMaterialModel extends FetchMaterialEntity {
-  const FetchMaterialModel({super.status, super.error, super.data});
+  const FetchMaterialModel({
+    super.status,
+    super.error,
+    super.message,
+    super.data,
+  });
 
   factory FetchMaterialModel.fromJson(Map<String, dynamic> json) {
     return FetchMaterialModel(
       status: int.tryParse(json['status'].toString()),
-      error: json['error'],
+      error: json['error'] as bool?,
+      message: json['message']?.toString(),
       data: (json['data'] as List?)
           ?.map((e) => MaterialModel.fromJson(e))
           .toList(),
@@ -17,6 +23,7 @@ class FetchMaterialModel extends FetchMaterialEntity {
     return {
       'status': status,
       'error': error,
+      'message': message,
       'data': data?.map((e) => (e as MaterialModel).toJson()).toList(),
     };
   }
@@ -36,6 +43,10 @@ class MaterialModel extends MaterialEntity {
     super.createdUser,
     super.modifiedDate,
     super.modifiedUser,
+    super.documentName,
+    super.notes,
+    super.link,
+    super.favorite,
   });
 
   factory MaterialModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +63,10 @@ class MaterialModel extends MaterialEntity {
       createdUser: json['CreatedUser']?.toString(),
       modifiedDate: json['ModifiedDate']?.toString(),
       modifiedUser: json['ModifiedUser']?.toString(),
+      documentName: json['documentName']?.toString(),
+      notes: json['notes']?.toString(),
+      link: json['link']?.toString(),
+      favorite: json['favorite'] as bool?,
     );
   }
 
@@ -69,6 +84,10 @@ class MaterialModel extends MaterialEntity {
       'CreatedUser': createdUser,
       'ModifiedDate': modifiedDate,
       'ModifiedUser': modifiedUser,
+      'documentName': documentName,
+      'notes': notes,
+      'link': link,
+      'favorite': favorite,
     };
   }
 }

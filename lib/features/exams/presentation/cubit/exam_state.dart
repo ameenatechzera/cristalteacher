@@ -8,3 +8,65 @@ sealed class ExamState extends Equatable {
 }
 
 final class ExamInitial extends ExamState {}
+
+class ExamLoading extends ExamState {}
+
+class ExamSuccess extends ExamState {
+  final FetchExamResponseEntity response;
+
+  const ExamSuccess(this.response);
+}
+
+class ExamFailure extends ExamState {
+  final String message;
+
+  const ExamFailure(this.message);
+}
+
+class FetchGradePlanLoading extends ExamState {}
+
+class FetchGradePlanSuccess extends ExamState {
+  final GradePlanResponseEntity response;
+
+  const FetchGradePlanSuccess(this.response);
+}
+
+class FetchGradePlanFailure extends ExamState {
+  final String message;
+
+  const FetchGradePlanFailure(this.message);
+}
+
+class GetAllExamLoading extends ExamState {}
+
+class GetAllExamSuccess extends ExamState {
+  final GetAllExamEntity response;
+
+  const GetAllExamSuccess(this.response);
+}
+
+class GetAllExamFailure extends ExamState {
+  final String message;
+
+  const GetAllExamFailure(this.message);
+}
+
+class SaveExamMarksLoading extends ExamState {}
+
+class SaveExamMarksSuccess extends ExamState {
+  final SaveExamMarksEntity response;
+
+  const SaveExamMarksSuccess(this.response);
+
+  @override
+  List<Object> get props => [response];
+}
+
+class SaveExamMarksFailure extends ExamState {
+  final String message;
+
+  const SaveExamMarksFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

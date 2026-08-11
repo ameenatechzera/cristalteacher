@@ -1,15 +1,44 @@
+import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/features/materials/domain/entities/fetch_material_entity.dart';
+import 'package:cristalteacher/features/materials/domain/parameter/fetch_material_parameter.dart';
+import 'package:cristalteacher/features/materials/presentation/cubit/material_cubit.dart';
 import 'package:cristalteacher/features/materials/presentation/screens/addmaterials_screen.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide MaterialState;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 
 class MaterialsExpansionScreen extends StatefulWidget {
-  const MaterialsExpansionScreen({super.key});
+  final int? subjectId;
+  final String subjectName;
+
+  const MaterialsExpansionScreen({
+    super.key,
+    required this.subjectId,
+    required this.subjectName,
+  });
 
   @override
   State<MaterialsExpansionScreen> createState() => _MaterialsExpansionScreen();
 }
 
 class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<MaterialCubit>().fetchMaterials(
+      FetchMaterialParameter(
+        subjectId: widget.subjectId!,
+        accYear: AppData.accYear!,
+        branchId: 1,
+        fromDate: "2026-07-01",
+        toDate: "2026-08-05",
+        staffId: null,
+      ),
+    );
+  }
+
   int selectedTab = 0;
 
   final List<String> tabs = ["Documents", "Links", "Notes"];
@@ -59,21 +88,98 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
             const SizedBox(height: 14),
             _buildSearchRow(),
             const SizedBox(height: 14),
+
+            // Expanded(
+            //   child: ListView(
+            //     padding: const EdgeInsets.fromLTRB(24, 0, 24, 90),
+            //     children: [
+            //       _buildDateText("12-10-2026 Monday"),
+            //       const SizedBox(height: 12),
+            //       _buildMaterialCard(),
+            //       _buildMaterialCard(),
+            //       _buildMaterialCard(),
+            //       const SizedBox(height: 18),
+            //       _buildDateText("12-10-2026 Monday"),
+            //       const SizedBox(height: 12),
+            //       _buildMaterialCard(),
+            //       _buildMaterialCard(),
+            //     ],
+            //   ),
+            // ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 90),
-                children: [
-                  _buildDateText("12-10-2026 Monday"),
-                  const SizedBox(height: 12),
-                  _buildMaterialCard(),
-                  _buildMaterialCard(),
-                  _buildMaterialCard(),
-                  const SizedBox(height: 18),
-                  _buildDateText("12-10-2026 Monday"),
-                  const SizedBox(height: 12),
-                  _buildMaterialCard(),
-                  _buildMaterialCard(),
-                ],
+              child: BlocConsumer<MaterialCubit, MaterialState>(
+                listener: (context, state) {},
+                builder: (context, state) {
+                  if (state is FetchMaterialLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is FetchMaterialFailure) {
+                    return Center(child: Text(state.message));
+                  }
+
+                  if (state is FetchMaterialSuccess) {
+                    //final materials = state.response.data ?? [];
+                    final allMaterials = state.response.data ?? [];
+                    for (final item in allMaterials) {
+                      print(
+                        "Document: ${item.documentName}, "
+                        "Link: ${item.link}, "
+                        "Notes: ${item.notes}",
+                      );
+                    }
+                    List<MaterialEntity> materials;
+
+                    switch (selectedTab) {
+                      case 0: // Documents
+                        materials = allMaterials
+                            .where((e) => (e.documentName?.isNotEmpty ?? false))
+                            .toList();
+                        break;
+
+                      case 1: // Links
+                        materials = allMaterials
+                            .where((e) => (e.link?.isNotEmpty ?? false))
+                            .toList();
+                        break;
+
+                      case 2: // Notes
+                        materials = allMaterials
+                            .where((e) => (e.notes?.isNotEmpty ?? false))
+                            .toList();
+                        break;
+
+                      default:
+                        materials = allMaterials;
+                    }
+                    if (materials.isEmpty) {
+                      return const Center(child: Text("No materials found"));
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 90),
+                      itemCount: materials.length,
+                      itemBuilder: (context, index) {
+                        final material = materials[index];
+
+                        return Column(
+                          children: [
+                            if (index == 0 ||
+                                materials[index - 1].createdDate !=
+                                    material.createdDate)
+                              _buildDateText(material.createdDate ?? ""),
+
+                            const SizedBox(height: 10),
+
+                            _buildMaterialCard(material),
+                          ],
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
+                },
               ),
             ),
           ],
@@ -214,7 +320,7 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
     );
   }
 
-  Widget _buildMaterialCard() {
+  Widget _buildMaterialCard(MaterialEntity material) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
@@ -228,17 +334,22 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
           const SizedBox(width: 14),
           Expanded(
             child: Text(
-              "Chapter 1: Number Systems",
+              selectedTab == 0
+                  ? (material.documentName ?? "")
+                  : selectedTab == 1
+                  ? (material.link ?? "")
+                  : (material.notes ?? ""),
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: Colors.black,
               ),
               overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ),
           const SizedBox(width: 8),
-          _buildTrailingSection(),
+          _buildTrailingSection(material),
         ],
       ),
     );
@@ -291,7 +402,7 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
     );
   }
 
-  Widget _buildTrailingSection() {
+  Widget _buildTrailingSection(MaterialEntity material) {
     return SizedBox(
       width: 55,
       child: Column(
@@ -307,9 +418,9 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
           ),
           const SizedBox(height: 10),
           if (selectedTab == 0)
-            const Text(
-              "09:01 Pm",
-              style: TextStyle(fontSize: 9, color: Colors.black),
+            Text(
+              formatTime(material.createdDate),
+              style: const TextStyle(fontSize: 9, color: Colors.black),
             )
           else
             Row(
@@ -331,6 +442,17 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
         ],
       ),
     );
+  }
+}
+
+String formatTime(String? dateTime) {
+  if (dateTime == null || dateTime.isEmpty) return "";
+
+  try {
+    final date = DateTime.parse(dateTime);
+    return DateFormat('hh:mm a').format(date);
+  } catch (e) {
+    return "";
   }
 }
 

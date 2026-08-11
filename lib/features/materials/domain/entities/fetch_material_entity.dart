@@ -1,9 +1,10 @@
 class FetchMaterialEntity {
   final int? status;
   final bool? error;
+  final String? message;
   final List<MaterialEntity>? data;
 
-  const FetchMaterialEntity({this.status, this.error, this.data});
+  const FetchMaterialEntity({this.status, this.error, this.message, this.data});
 }
 
 class MaterialEntity {
@@ -19,6 +20,10 @@ class MaterialEntity {
   final String? createdUser;
   final String? modifiedDate;
   final String? modifiedUser;
+  final String? documentName;
+  final String? notes;
+  final String? link;
+  final bool? favorite;
 
   const MaterialEntity({
     this.materialId,
@@ -33,5 +38,9 @@ class MaterialEntity {
     this.createdUser,
     this.modifiedDate,
     this.modifiedUser,
+    this.documentName,
+    this.notes,
+    this.link,
+    this.favorite,
   });
 }

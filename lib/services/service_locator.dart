@@ -1,6 +1,7 @@
 import 'package:cristalteacher/features/attendance/data/datasources/attendancedetails_remote_data_source.dart';
 import 'package:cristalteacher/features/attendance/data/repositories/attendance_repository_impl.dart';
 import 'package:cristalteacher/features/attendance/domain/repositories/attendancedetails_repository.dart';
+import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendance_report_usecase.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendancedetails_usecase.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/save_attendance_usecase.dart';
 import 'package:cristalteacher/features/attendance/presentation/cubit/attendance_cubit.dart';
@@ -19,6 +20,14 @@ import 'package:cristalteacher/features/diary/domain/repositories/diary_reposito
 import 'package:cristalteacher/features/diary/domain/usecases/fetch_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/save_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
+import 'package:cristalteacher/features/exams/data/datasources/exam_remote_data_source.dart';
+import 'package:cristalteacher/features/exams/data/repositories/exam_repository_impl.dart';
+import 'package:cristalteacher/features/exams/domain/repositories/exam_repository.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/fetch_exam_usecase.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/fetch_gradeplans_usecase.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/get_all_exams_usecase.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/save_exammarks_usecase.dart';
+import 'package:cristalteacher/features/exams/presentation/cubit/exam_cubit.dart';
 import 'package:cristalteacher/features/feed/data/datasources/feed_remote_data_source.dart';
 import 'package:cristalteacher/features/feed/data/repositories/feed_repository_impl.dart';
 import 'package:cristalteacher/features/feed/domain/repository/feed_repository.dart';
@@ -84,11 +93,13 @@ Future<void> init() async {
     () => AttendanceCubit(
       attendanceDetailsUseCase: sl(),
       saveAttendanceUseCase: sl(),
+      fetchAttendanceReportUseCase: sl(),
     ),
   );
 
   sl.registerLazySingleton(() => AttendanceDetailsUseCase(sl()));
   sl.registerLazySingleton(() => SaveAttendanceUseCase(sl()));
+  sl.registerLazySingleton(() => FetchAttendanceReportUseCase(sl()));
 
   sl.registerLazySingleton<AttendanceRepository>(
     () => AttendanceRepositoryImpl(sl()),
@@ -130,5 +141,29 @@ Future<void> init() async {
   /// Remote Data Source
   sl.registerLazySingleton<MaterialRemoteDataSource>(
     () => MaterialRemoteDataSourceImpl(),
+  );
+
+  /// Cubit
+  sl.registerFactory(
+    () => ExamCubit(
+      fetchExamUseCase: sl(),
+      fetchGradePlanUseCase: sl(),
+      getAllExamUseCase: sl(),
+      saveExamMarksUseCase: sl(),
+    ),
+  );
+
+  /// UseCase
+  sl.registerLazySingleton(() => FetchExamUseCase(sl()));
+  sl.registerLazySingleton(() => FetchGradePlanUseCase(sl()));
+  sl.registerLazySingleton(() => GetAllExamUseCase(sl()));
+  sl.registerLazySingleton(() => SaveExamMarksUseCase(sl()));
+
+  /// Repository
+  sl.registerLazySingleton<ExamRepository>(() => ExamRepositoryImpl(sl()));
+
+  /// Remote Data Source
+  sl.registerLazySingleton<ExamRemoteDataSource>(
+    () => ExamRemoteDataSourceImpl(),
   );
 }

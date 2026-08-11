@@ -46,11 +46,31 @@ class ApiConstants {
     return '${baseUrl}save-feedmaster';
   }
 
-  static String getAllMaterialsPath(String baseUrl) {
-    return '${baseUrl}get-all-materials';
+  static String getFetchMaterialPath(String baseUrl) {
+    return '${baseUrl}app/get-material-list';
   }
 
   static String saveMaterialPath(String baseUrl) {
     return '${baseUrl}save-material';
+  }
+
+  static String getMarkEntryPath(String baseUrl) {
+    return '${baseUrl}exam-mark-entry/show-by-branch';
+  }
+
+  static String getGradePlanPath(String baseUrl) {
+    return '${baseUrl}exam-grade-plans-data/1';
+  }
+
+  static String getAllExamPath(String baseUrl) {
+    return '${baseUrl}get-allexams/1';
+  }
+
+  static String saveExamMarksPath(String baseUrl) {
+    return '${baseUrl}exam-mark-entry/store';
+  }
+
+  static String getAttendanceReportPath(String baseUrl) {
+    return '${baseUrl}StudentAttendanceMaster/1';
   }
 }

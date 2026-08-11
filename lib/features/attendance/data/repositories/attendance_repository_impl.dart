@@ -3,6 +3,7 @@ import 'package:cristalteacher/core/errors/failure.dart';
 import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/core/utils/typedef.dart';
 import 'package:cristalteacher/features/attendance/data/datasources/attendancedetails_remote_data_source.dart';
+import 'package:cristalteacher/features/attendance/domain/entities/attendance_report_entity.dart';
 import 'package:cristalteacher/features/attendance/domain/entities/fetch_attendancedetails_entity.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/fetch_attendancedetails_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/save_attendance_parameter.dart';
@@ -35,6 +36,19 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   ) async {
     try {
       final response = await _remoteDataSource.saveAttendance(request);
+
+      return Right(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.errorMessageModel.statusMessage));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<AttendanceReportEntity> fetchAttendanceReport() async {
+    try {
+      final response = await _remoteDataSource.fetchAttendanceReport();
 
       return Right(response);
     } on ServerException catch (e) {

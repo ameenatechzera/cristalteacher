@@ -1,17 +1,30 @@
+import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
+import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/materials/presentation/screens/materials_expansion_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class MaterialsScreen extends StatelessWidget {
+class MaterialsScreen extends StatefulWidget {
   MaterialsScreen({super.key});
 
-  final List<SubjectUiModel> subjects = [
-    SubjectUiModel(name: "Maths"),
-    SubjectUiModel(name: "Physics"),
-    SubjectUiModel(name: "Chemistry"),
-    SubjectUiModel(name: "English"),
-    SubjectUiModel(name: "GK"),
-    SubjectUiModel(name: "Arabic"),
-  ];
+  @override
+  State<MaterialsScreen> createState() => _MaterialsScreenState();
+}
+
+class _MaterialsScreenState extends State<MaterialsScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<AuthenticationCubit>().fetchTutorshipClass(
+      FetchTutorshipClassRequest(
+        accyear: AppData.accYear,
+        employeeId: AppData.employeeId,
+        userId: AppData.userId,
+      ),
+    );
+  }
 
   Map<String, dynamic> getSubjectStyle(String name) {
     switch (name.toLowerCase()) {
@@ -81,79 +94,106 @@ class MaterialsScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: subjects.length,
-        itemBuilder: (context, index) {
-          final subject = subjects[index];
-          final style = getSubjectStyle(subject.name);
+      body: BlocBuilder<AuthenticationCubit, AuthenticationState>(
+        builder: (context, state) {
+          if (state is FetchTutorshipClassLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          return InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MaterialsExpansionScreen(),
-                ),
-              );
-            },
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
+          if (state is FetchTutorshipClassFailure) {
+            return Center(child: Text(state.message));
+          }
+
+          if (state is FetchTutorshipClassSuccess) {
+            final subjects =
+                state
+                    .response
+                    .data
+                    ?.tutorshipClass
+                    ?.first
+                    .division
+                    ?.first
+                    .subject ??
+                [];
+
+            if (subjects.isEmpty) {
+              return const Center(child: Text("No subjects found"));
+            }
+
+            return ListView.builder(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      color: style["color"] as Color,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Image.asset(
-                        style["icon"] as String,
-                        height: 24,
-                        width: 24,
-                        fit: BoxFit.contain,
+              itemCount: subjects.length,
+              itemBuilder: (context, index) {
+                final subject = subjects[index];
+
+                final style = getSubjectStyle(subject.subject ?? "");
+
+                return InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaterialsExpansionScreen(
+                          subjectId: subject.subjectId,
+                          subjectName: subject.subject ?? "",
+                        ),
                       ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 50,
+                          width: 50,
+                          decoration: BoxDecoration(
+                            color: style["color"] as Color,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Image.asset(
+                              style["icon"] as String,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            subject.subject ?? "",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                );
+              },
+            );
+          }
 
-                  const SizedBox(width: 16),
-
-                  Text(
-                    subject.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+          return const SizedBox();
         },
       ),
     );
   }
-}
-
-class SubjectUiModel {
-  final String name;
-
-  SubjectUiModel({required this.name});
 }

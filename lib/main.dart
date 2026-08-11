@@ -2,6 +2,7 @@ import 'package:cristalteacher/features/attendance/presentation/cubit/attendance
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/authentication/presentation/screens/splash_screen.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
+import 'package:cristalteacher/features/exams/presentation/cubit/exam_cubit.dart';
 import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:cristalteacher/features/materials/presentation/cubit/material_cubit.dart';
 import 'package:cristalteacher/services/service_locator.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<AttendanceCubit>(create: (_) => sl<AttendanceCubit>()),
         BlocProvider<FeedCubit>(create: (_) => sl<FeedCubit>()),
         BlocProvider<MaterialCubit>(create: (_) => sl<MaterialCubit>()),
+        BlocProvider<ExamCubit>(create: (_) => sl<ExamCubit>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

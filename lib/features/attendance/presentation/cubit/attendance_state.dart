@@ -36,3 +36,20 @@ class SaveAttendanceFailure extends AttendanceState {
 
   const SaveAttendanceFailure(this.message);
 }
+// ─────────────────────────────────────────────
+// Attendance Report
+// ─────────────────────────────────────────────
+
+class AttendanceReportLoading extends AttendanceState {}
+
+class AttendanceReportSuccess extends AttendanceState {
+  final AttendanceReportEntity response;
+
+  const AttendanceReportSuccess(this.response);
+}
+
+class AttendanceReportFailure extends AttendanceState {
+  final String message;
+
+  const AttendanceReportFailure(this.message);
+}

@@ -1,6 +1,5 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/attendance/presentation/screens/attendance_report_screen.dart';
-import 'package:cristalteacher/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/diary_screen.dart';
@@ -13,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TeacherDashboardPage extends StatefulWidget {
-  TeacherDashboardPage({super.key});
+  const TeacherDashboardPage({super.key});
 
   @override
   State<TeacherDashboardPage> createState() => _TeacherDashboardPageState();
