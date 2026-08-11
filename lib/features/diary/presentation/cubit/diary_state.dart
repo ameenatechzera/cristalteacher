@@ -36,3 +36,17 @@ class SaveDiaryFailure extends DiaryState {
 
   const SaveDiaryFailure(this.message);
 }
+
+class DeleteDiaryLoading extends DiaryState {}
+
+class DeleteDiarySuccess extends DiaryState {
+  final MasterResponseModel response;
+
+  const DeleteDiarySuccess(this.response);
+}
+
+class DeleteDiaryFailure extends DiaryState {
+  final String message;
+
+  const DeleteDiaryFailure(this.message);
+}

@@ -1,10 +1,12 @@
 import 'package:bloc/bloc.dart';
+import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetch_gradeplan_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetchexam_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/get_all_exam_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/save_exammarks_entiity.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/fetch_exam_parameter.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/save_exam_parameter.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/delete_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_gradeplans_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/get_all_exams_usecase.dart';
@@ -18,15 +20,18 @@ class ExamCubit extends Cubit<ExamState> {
   final FetchGradePlanUseCase _fetchGradePlanUseCase;
   final GetAllExamUseCase _getAllExamUseCase;
   final SaveExamMarksUseCase _saveExamMarksUseCase;
+  final DeleteExamMarkUseCase _deleteExamMarkUseCase;
   ExamCubit({
     required FetchExamUseCase fetchExamUseCase,
     required FetchGradePlanUseCase fetchGradePlanUseCase,
     required GetAllExamUseCase getAllExamUseCase,
     required SaveExamMarksUseCase saveExamMarksUseCase,
+    required DeleteExamMarkUseCase deleteExamMarkUseCase,
   }) : _fetchExamUseCase = fetchExamUseCase,
        _fetchGradePlanUseCase = fetchGradePlanUseCase,
        _getAllExamUseCase = getAllExamUseCase,
        _saveExamMarksUseCase = saveExamMarksUseCase,
+       _deleteExamMarkUseCase = deleteExamMarkUseCase,
        super(ExamInitial());
   Future<void> fetchMarkEntry(FetchMarkEntryParameter request) async {
     print('📘 FetchMarkEntryRequest: ${request.toJson()}');
@@ -141,6 +146,38 @@ class ExamCubit extends Cubit<ExamState> {
       print(stacktrace);
 
       emit(const SaveExamMarksFailure('An unexpected error occurred'));
+    }
+  } // ============================================================
+  // DELETE EXAM MARK
+  // ============================================================
+
+  Future<void> deleteExamMark(int id) async {
+    print('🗑️ Delete Exam Mark');
+    print('Exam Mark ID: $id');
+
+    emit(DeleteExamMarkLoading());
+
+    try {
+      final result = await _deleteExamMarkUseCase(id);
+
+      result.fold(
+        (failure) {
+          print('❌ Delete Exam Mark Failed');
+          print(failure.message);
+
+          emit(DeleteExamMarkFailure(failure.message));
+        },
+        (response) {
+          print('✅ Delete Exam Mark Success');
+
+          emit(DeleteExamMarkSuccess(response));
+        },
+      );
+    } catch (e, stacktrace) {
+      print('❌ Exception during deleteExamMark: $e');
+      print(stacktrace);
+
+      emit(const DeleteExamMarkFailure('An unexpected error occurred'));
     }
   }
 }

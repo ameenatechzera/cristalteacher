@@ -928,7 +928,8 @@ class _ExamScreenState extends State<ExamScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-
+                // Call delete API
+                context.read<ExamCubit>().deleteExamMark(exam.markEntryId);
                 // Call the delete exam Cubit here.
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -984,7 +985,7 @@ class _ExamScreenState extends State<ExamScreen> {
           _buildFilterSection(),
           Expanded(
             child: BlocConsumer<ExamCubit, ExamState>(
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state is ExamSuccess) {
                   setState(() {
                     exams = state.response.data ?? [];
@@ -995,6 +996,22 @@ class _ExamScreenState extends State<ExamScreen> {
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text(state.message)));
+                }
+                if (state is DeleteExamMarkSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Exam deleted successfully')),
+                  );
+
+                  await _fetchExams();
+                }
+
+                if (state is DeleteExamMarkFailure) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                }
+                if (state is SaveExamMarksSuccess) {
+                  await _fetchExams();
                 }
               },
               builder: (context, state) {

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cristalteacher/core/errors/error_messege_model.dart';
 import 'package:cristalteacher/core/errors/exceptions.dart';
+import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/core/network/api_endpoints.dart';
 import 'package:cristalteacher/core/network/api_helper.dart';
 import 'package:cristalteacher/features/exams/data/models/fetch_gradeplan_model.dart';
@@ -18,6 +19,7 @@ abstract class ExamRemoteDataSource {
   Future<GradePlanResponseModel> fetchGradePlan();
   Future<GetAllExamResponseModel> getAllExams();
   Future saveExamMarks(SaveExamMarksParameter params);
+  Future<MasterResponseModel> deleteExams(int id);
 }
 
 class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
@@ -248,6 +250,62 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
       }
     } catch (e, stacktrace) {
       print('❌ Exception in saveExamMarks: $e');
+      print(stacktrace);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MasterResponseModel> deleteExams(int id) async {
+    print('🗑️ Delete Exam Mark Called');
+    print('Exam Mark ID: $id');
+
+    try {
+      /// Base URL
+      final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("Base URL not set");
+      }
+
+      /// API URL
+      /// ID is passed along with the URL
+      final url = '${ApiConstants.deleteExamMarkPath(baseUrl)}$id';
+
+      print('🗑️ Delete Exam Mark URL: $url');
+
+      /// Headers
+      final options = await ApiHelper.getAuthOptions(withToken: true);
+
+      /// API Call
+      final response = await dio.post(url, options: options);
+
+      print('🗑️ Status Code: ${response.statusCode}');
+
+      final responseString = jsonEncode(response.data);
+
+      const chunkSize = 800;
+
+      for (int i = 0; i < responseString.length; i += chunkSize) {
+        print(
+          responseString.substring(
+            i,
+            i + chunkSize > responseString.length
+                ? responseString.length
+                : i + chunkSize,
+          ),
+        );
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return MasterResponseModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(response.data),
+        );
+      }
+    } catch (e, stacktrace) {
+      print('❌ Exception in deleteExamMark: $e');
       print(stacktrace);
       rethrow;
     }

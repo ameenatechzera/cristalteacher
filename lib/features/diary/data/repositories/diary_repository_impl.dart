@@ -43,4 +43,17 @@ class DiaryRepositoryImpl implements DiaryRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  ResultFuture<MasterResponseModel> deleteDiary(int id) async {
+    try {
+      final response = await _remoteDataSource.deleteDiary(id);
+
+      return Right(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.errorMessageModel.statusMessage));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/core/utils/date_utils_helper.dart';
 import 'package:cristalteacher/features/feed/domain/parameters/fetch_feed_parameter.dart';
 import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:cristalteacher/features/feed/presentation/screens/addfeed_screen.dart';
@@ -21,14 +22,16 @@ class _FeedScreenState extends State<FeedScreen> {
     _fetchFeed();
   }
 
+  final currentDate = DateUtilsHelper.getCurrentDate();
+
   void _fetchFeed() {
     context.read<FeedCubit>().fetchFeed(
       FetchFeedParams(
         accYear: AppData.accYear,
         standardId: AppData.studentStdId,
         divisionId: AppData.studentDivId,
-        fromDate: "2026-06-01",
-        toDate: "2026-08-01",
+        fromDate: currentDate,
+        toDate: currentDate,
       ),
     );
   }
@@ -198,8 +201,8 @@ class _FeedScreenState extends State<FeedScreen> {
                 accYear: AppData.accYear,
                 standardId: AppData.studentStdId,
                 divisionId: AppData.studentDivId,
-                fromDate: "2026-06-01",
-                toDate: "2026-08-01",
+                fromDate: currentDate,
+                toDate: currentDate,
               ),
             );
           }

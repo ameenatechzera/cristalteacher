@@ -1,4 +1,5 @@
 import 'package:cristalteacher/core/errors/failure.dart';
+import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/features/exams/data/datasources/exam_remote_data_source.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetch_gradeplan_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetchexam_entity.dart';
@@ -54,6 +55,16 @@ class ExamRepositoryImpl implements ExamRepository {
   ) async {
     try {
       final result = await _remoteDataSource.saveExamMarks(params);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<MasterResponseModel> deleteExamMark(int id) async {
+    try {
+      final result = await _remoteDataSource.deleteExams(id);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.toString()));

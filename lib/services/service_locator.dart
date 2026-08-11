@@ -17,12 +17,14 @@ import 'package:cristalteacher/features/authentication/presentation/cubit/authen
 import 'package:cristalteacher/features/diary/data/datasources/diary_remote_data_source.dart';
 import 'package:cristalteacher/features/diary/data/repositories/diary_repository_impl.dart';
 import 'package:cristalteacher/features/diary/domain/repositories/diary_repository.dart';
+import 'package:cristalteacher/features/diary/domain/usecases/delete_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/fetch_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/save_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
 import 'package:cristalteacher/features/exams/data/datasources/exam_remote_data_source.dart';
 import 'package:cristalteacher/features/exams/data/repositories/exam_repository_impl.dart';
 import 'package:cristalteacher/features/exams/domain/repositories/exam_repository.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/delete_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_gradeplans_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/get_all_exams_usecase.dart';
@@ -75,11 +77,16 @@ Future<void> init() async {
   );
 
   sl.registerFactory<DiaryCubit>(
-    () => DiaryCubit(fetchDiaryUseCase: sl(), saveDiaryUseCase: sl()),
+    () => DiaryCubit(
+      fetchDiaryUseCase: sl(),
+      saveDiaryUseCase: sl(),
+      deleteDiaryUseCase: sl(),
+    ),
   );
 
   sl.registerLazySingleton<FetchDiaryUseCase>(() => FetchDiaryUseCase(sl()));
   sl.registerLazySingleton<SaveDiaryUseCase>(() => SaveDiaryUseCase(sl()));
+  sl.registerLazySingleton<DeleteDiaryUseCase>(() => DeleteDiaryUseCase(sl()));
 
   sl.registerLazySingleton<DiaryRepository>(() => DiaryRepositoryImpl(sl()));
 
@@ -150,6 +157,7 @@ Future<void> init() async {
       fetchGradePlanUseCase: sl(),
       getAllExamUseCase: sl(),
       saveExamMarksUseCase: sl(),
+      deleteExamMarkUseCase: sl(),
     ),
   );
 
@@ -158,6 +166,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FetchGradePlanUseCase(sl()));
   sl.registerLazySingleton(() => GetAllExamUseCase(sl()));
   sl.registerLazySingleton(() => SaveExamMarksUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteExamMarkUseCase(sl()));
 
   /// Repository
   sl.registerLazySingleton<ExamRepository>(() => ExamRepositoryImpl(sl()));

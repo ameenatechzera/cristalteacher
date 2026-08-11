@@ -1,3 +1,4 @@
+import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/core/utils/typedef.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetch_gradeplan_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetchexam_entity.dart';
@@ -15,4 +16,5 @@ abstract class ExamRepository {
   ResultFuture<SaveExamMarksEntity> saveExamMarks(
     SaveExamMarksParameter params,
   );
+  ResultFuture<MasterResponseModel> deleteExamMark(int id);
 }

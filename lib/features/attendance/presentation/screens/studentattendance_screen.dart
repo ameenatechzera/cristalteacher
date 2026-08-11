@@ -2045,7 +2045,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             if (!mounted) {
               return;
             }
-
+            Navigator.of(context).pop();
             Navigator.of(context).pop(true);
           });
         }

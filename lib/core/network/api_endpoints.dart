@@ -73,4 +73,12 @@ class ApiConstants {
   static String getAttendanceReportPath(String baseUrl) {
     return '${baseUrl}StudentAttendanceMaster/1';
   }
+
+  static String deleteExamMarkPath(String baseUrl) {
+    return '${baseUrl}exam-mark-entry/delete/';
+  }
+
+  static String deleteDiaryPath(String baseUrl) {
+    return '${baseUrl}delete-classdiary/';
+  }
 }

@@ -7,4 +7,5 @@ import 'package:cristalteacher/features/diary/domain/parameters/save_diary_param
 abstract class DiaryRepository {
   ResultFuture<DiaryResponseEntity> fetchDiary(FetchDiaryParameter request);
   ResultFuture<MasterResponseModel> saveDiary(SaveDiaryParameter params);
+  ResultFuture<MasterResponseModel> deleteDiary(int id);
 }

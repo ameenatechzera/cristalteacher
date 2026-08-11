@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/feed/domain/parameters/save_feed_parameter.dart';
 import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -18,6 +21,8 @@ class AddFeedScreen extends StatefulWidget {
 class _AddFeedScreenState extends State<AddFeedScreen> {
   final TextEditingController captionController = TextEditingController();
   final List<Map<String, dynamic>> selectedClasses = [];
+  File? selectedFile;
+  String? selectedFileName;
   @override
   void initState() {
     super.initState();
@@ -41,6 +46,50 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
   void dispose() {
     captionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+
+      final pickedFile = result.files.single;
+
+      if (pickedFile.path == null) {
+        _showMessage('Unable to access selected file');
+        return;
+      }
+
+      setState(() {
+        selectedFile = File(pickedFile.path!);
+        selectedFileName = pickedFile.name;
+      });
+
+      debugPrint('======================================');
+      debugPrint('📎 FILE SELECTED');
+      debugPrint('Name: ${pickedFile.name}');
+      debugPrint('Path: ${pickedFile.path}');
+      debugPrint('Size: ${pickedFile.size}');
+      debugPrint('======================================');
+    } catch (e) {
+      debugPrint('❌ File picker error: $e');
+      _showMessage('Unable to select file');
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -96,7 +145,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () {},
+                  onTap: _pickFile,
                   child: CustomPaint(
                     painter: DashedBorderPainter(
                       color: Colors.black54,
@@ -347,7 +396,14 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
                           branchId: AppData.branchId ?? 1,
                           createdUser: AppData.userId.toString(),
                           accYear: AppData.accYear ?? '1',
-                          feedMasterFiles: [],
+                          feedMasterFiles: selectedFile == null
+                              ? []
+                              : [
+                                  FeedMasterFileParameter(
+                                    file: selectedFile!.path,
+                                  ),
+                                ],
+                          //feedMasterFiles: [],
                         ),
                       );
                     },

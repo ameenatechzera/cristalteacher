@@ -213,7 +213,24 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
                     ),
 
                     Expanded(
-                      child: BlocBuilder<DiaryCubit, DiaryState>(
+                      child: BlocConsumer<DiaryCubit, DiaryState>(
+                        listener: (context, state) {
+                          if (state is DeleteDiarySuccess) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Diary deleted successfully'),
+                              ),
+                            );
+
+                            _fetchDiary();
+                          }
+
+                          if (state is DeleteDiaryFailure) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(state.message)),
+                            );
+                          }
+                        },
                         builder: (context, state) {
                           if (state is DiaryLoading) {
                             return const Center(
@@ -253,15 +270,7 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
                               physics: const AlwaysScrollableScrollPhysics(),
                               children: const [
                                 SizedBox(height: 280),
-                                Center(
-                                  child: Text(
-                                    'No diary data',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
+                                Center(child: SizedBox()),
                               ],
                             ),
                           );
@@ -527,7 +536,10 @@ class _ApiDiaryCard extends StatelessWidget {
 
                   const SizedBox(width: 8),
 
-                  const _CircleActionButton(icon: Icons.delete_outline),
+                  _CircleActionButton(
+                    icon: Icons.delete_outline,
+                    onTap: () => _deleteDiary(context),
+                  ),
                 ],
               ),
             ),
@@ -600,6 +612,38 @@ class _ApiDiaryCard extends StatelessWidget {
     );
   }
 
+  Future<void> _deleteDiary(BuildContext context) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Diary'),
+          content: const Text('Are you sure you want to delete this diary?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    context.read<DiaryCubit>().deleteDiary(diary.diaryId);
+  }
+
   static String _capitalize(String text) {
     if (text.isEmpty) {
       return text;
@@ -611,20 +655,24 @@ class _ApiDiaryCard extends StatelessWidget {
 
 class _CircleActionButton extends StatelessWidget {
   final IconData icon;
+  final VoidCallback? onTap;
 
-  const _CircleActionButton({required this.icon});
+  const _CircleActionButton({required this.icon, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 23,
-      height: 23,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.65),
-        shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 23,
+        height: 23,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.65),
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, color: const Color(0xff555555), size: 13),
       ),
-      alignment: Alignment.center,
-      child: Icon(icon, color: const Color(0xff555555), size: 13),
     );
   }
 }
@@ -950,22 +998,59 @@ class _AttachmentBoxState extends State<_AttachmentBox> {
     return _buildDocumentAttachment();
   }
 
+  // Widget _buildImageAttachment() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       ClipRRect(
+  //         borderRadius: BorderRadius.circular(12),
+  //         child: _buildImage(),
+  //       ),
+  //       const SizedBox(height: 5),
+  //       Text(
+  //         fileName,
+  //         maxLines: 1,
+  //         overflow: TextOverflow.ellipsis,
+  //         style: const TextStyle(fontSize: 9, color: Color(0xff555555)),
+  //       ),
+  //     ],
+  //   );
+  // }
   Widget _buildImageAttachment() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: _buildImage(),
+    return GestureDetector(
+      onTap: _openImageFullscreen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildImage(),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            fileName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 9, color: Color(0xff555555)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openImageFullscreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _FullscreenImageViewer(
+          imageUrl: completeUrl,
+          filePath: isNetworkFile || widget.baseUrl.isNotEmpty
+              ? null
+              : cleanedPath,
         ),
-        const SizedBox(height: 5),
-        Text(
-          fileName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 9, color: Color(0xff555555)),
-        ),
-      ],
+      ),
     );
   }
 
@@ -1172,6 +1257,61 @@ class _AttachmentBoxState extends State<_AttachmentBox> {
     final seconds = duration.inSeconds.remainder(60);
 
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+}
+
+class _FullscreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+  final String? filePath;
+
+  const _FullscreenImageViewer({required this.imageUrl, this.filePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.5,
+          maxScale: 4.0,
+          child: filePath != null
+              ? Image.file(
+                  File(filePath!),
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) {
+                    return const Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.white,
+                      size: 60,
+                    );
+                  },
+                )
+              : Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) {
+                      return child;
+                    }
+
+                    return const CircularProgressIndicator(color: Colors.white);
+                  },
+                  errorBuilder: (_, __, ___) {
+                    return const Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.white,
+                      size: 60,
+                    );
+                  },
+                ),
+        ),
+      ),
+    );
   }
 }
 

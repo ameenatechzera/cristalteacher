@@ -70,3 +70,20 @@ class SaveExamMarksFailure extends ExamState {
   @override
   List<Object> get props => [message];
 }
+// ============================================================
+// DELETE EXAM MARK
+// ============================================================
+
+class DeleteExamMarkLoading extends ExamState {}
+
+class DeleteExamMarkSuccess extends ExamState {
+  final MasterResponseModel response;
+
+  const DeleteExamMarkSuccess(this.response);
+}
+
+class DeleteExamMarkFailure extends ExamState {
+  final String message;
+
+  const DeleteExamMarkFailure(this.message);
+}

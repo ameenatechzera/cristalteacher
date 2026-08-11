@@ -1467,6 +1467,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                 context,
               ).showSnackBar(SnackBar(content: Text(state.message)));
             }
+            if (state is SaveAttendanceSuccess) {
+              _fetchAttendanceReport();
+            }
           },
         ),
       ],
