@@ -36,3 +36,23 @@ class SaveFeedFailure extends FeedState {
 
   const SaveFeedFailure(this.message);
 }
+
+class DeleteFeedLoading extends FeedState {}
+
+class DeleteFeedSuccess extends FeedState {
+  final MasterResponseModel response;
+
+  const DeleteFeedSuccess(this.response);
+
+  @override
+  List<Object> get props => [response];
+}
+
+class DeleteFeedFailure extends FeedState {
+  final String message;
+
+  const DeleteFeedFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

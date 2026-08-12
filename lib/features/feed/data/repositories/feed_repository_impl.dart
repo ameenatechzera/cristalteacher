@@ -42,4 +42,17 @@ class FeedRepositoryImpl implements FeedRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  ResultFuture<MasterResponseModel> deleteFeed(int id) async {
+    try {
+      final response = await remoteDataSource.deleteFeed(id);
+
+      return Right(response);
+    } on DioException catch (e) {
+      return Left(ServerFailure(e.message ?? "Something went wrong"));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

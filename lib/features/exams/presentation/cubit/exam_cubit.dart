@@ -6,11 +6,13 @@ import 'package:cristalteacher/features/exams/domain/entities/get_all_exam_entit
 import 'package:cristalteacher/features/exams/domain/entities/save_exammarks_entiity.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/fetch_exam_parameter.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/save_exam_parameter.dart';
+import 'package:cristalteacher/features/exams/domain/parameters/update_exam_parameter.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/delete_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_gradeplans_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/get_all_exams_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/save_exammarks_usecase.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/update_exam_usecase.dart';
 import 'package:equatable/equatable.dart';
 
 part 'exam_state.dart';
@@ -21,17 +23,20 @@ class ExamCubit extends Cubit<ExamState> {
   final GetAllExamUseCase _getAllExamUseCase;
   final SaveExamMarksUseCase _saveExamMarksUseCase;
   final DeleteExamMarkUseCase _deleteExamMarkUseCase;
+  final UpdateMarkEntryUseCase _updateMarkEntryUseCase;
   ExamCubit({
     required FetchExamUseCase fetchExamUseCase,
     required FetchGradePlanUseCase fetchGradePlanUseCase,
     required GetAllExamUseCase getAllExamUseCase,
     required SaveExamMarksUseCase saveExamMarksUseCase,
     required DeleteExamMarkUseCase deleteExamMarkUseCase,
+    required UpdateMarkEntryUseCase updateMarkEntryUseCase,
   }) : _fetchExamUseCase = fetchExamUseCase,
        _fetchGradePlanUseCase = fetchGradePlanUseCase,
        _getAllExamUseCase = getAllExamUseCase,
        _saveExamMarksUseCase = saveExamMarksUseCase,
        _deleteExamMarkUseCase = deleteExamMarkUseCase,
+       _updateMarkEntryUseCase = updateMarkEntryUseCase,
        super(ExamInitial());
   Future<void> fetchMarkEntry(FetchMarkEntryParameter request) async {
     print('📘 FetchMarkEntryRequest: ${request.toJson()}');
@@ -178,6 +183,38 @@ class ExamCubit extends Cubit<ExamState> {
       print(stacktrace);
 
       emit(const DeleteExamMarkFailure('An unexpected error occurred'));
+    }
+  } // ============================================================
+  // UPDATE EXAM MARKS
+  // ============================================================
+
+  Future<void> updateMarkEntry(UpdateMarkEntryParameter request) async {
+    print('✏️ Update Mark Entry Request');
+    print('UpdateMarkEntryParameter: ${request.toJson()}');
+
+    emit(UpdateMarkEntryLoading());
+
+    try {
+      final result = await _updateMarkEntryUseCase(request);
+
+      result.fold(
+        (failure) {
+          print('❌ Update Mark Entry Failed');
+          print(failure.message);
+
+          emit(UpdateMarkEntryFailure(failure.message));
+        },
+        (response) {
+          print('✅ Update Mark Entry Success');
+
+          emit(UpdateMarkEntrySuccess(response));
+        },
+      );
+    } catch (e, stackTrace) {
+      print('❌ Exception during updateMarkEntry: $e');
+      print(stackTrace);
+
+      emit(const UpdateMarkEntryFailure('An unexpected error occurred'));
     }
   }
 }

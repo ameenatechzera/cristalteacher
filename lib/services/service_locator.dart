@@ -29,10 +29,12 @@ import 'package:cristalteacher/features/exams/domain/usecases/fetch_exam_usecase
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_gradeplans_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/get_all_exams_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/save_exammarks_usecase.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/update_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/presentation/cubit/exam_cubit.dart';
 import 'package:cristalteacher/features/feed/data/datasources/feed_remote_data_source.dart';
 import 'package:cristalteacher/features/feed/data/repositories/feed_repository_impl.dart';
 import 'package:cristalteacher/features/feed/domain/repository/feed_repository.dart';
+import 'package:cristalteacher/features/feed/domain/usecases/delete_feed_usecase.dart';
 import 'package:cristalteacher/features/feed/domain/usecases/fetch_feed_usecase.dart';
 import 'package:cristalteacher/features/feed/domain/usecases/save_feed_usecase.dart';
 import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
@@ -119,11 +121,16 @@ Future<void> init() async {
   /// ================= Feed =================
 
   sl.registerFactory(
-    () => FeedCubit(fetchFeedUseCase: sl(), saveFeedUseCase: sl()),
+    () => FeedCubit(
+      fetchFeedUseCase: sl(),
+      saveFeedUseCase: sl(),
+      deleteFeedUseCase: sl(),
+    ),
   );
 
   sl.registerLazySingleton(() => FetchFeedUseCase(sl()));
   sl.registerLazySingleton(() => SaveFeedUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteFeedUseCase(sl()));
 
   sl.registerLazySingleton<FeedRepository>(() => FeedRepositoryImpl(sl()));
 
@@ -158,6 +165,7 @@ Future<void> init() async {
       getAllExamUseCase: sl(),
       saveExamMarksUseCase: sl(),
       deleteExamMarkUseCase: sl(),
+      updateMarkEntryUseCase: sl(),
     ),
   );
 
@@ -167,6 +175,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetAllExamUseCase(sl()));
   sl.registerLazySingleton(() => SaveExamMarksUseCase(sl()));
   sl.registerLazySingleton(() => DeleteExamMarkUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateMarkEntryUseCase(sl()));
 
   /// Repository
   sl.registerLazySingleton<ExamRepository>(() => ExamRepositoryImpl(sl()));

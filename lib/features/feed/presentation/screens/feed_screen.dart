@@ -36,7 +36,7 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  void showDeleteDialog(int index) {
+  void showDeleteDialog(int feedId) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -103,7 +103,11 @@ class _FeedScreenState extends State<FeedScreen> {
                       width: 92,
                       height: 38,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+
+                          context.read<FeedCubit>().deleteFeed(feedId);
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xff8f83dc),
                           foregroundColor: Colors.white,
@@ -212,6 +216,23 @@ class _FeedScreenState extends State<FeedScreen> {
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
           }
+          if (state is DeleteFeedSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.response.message ?? 'Feed deleted successfully',
+                ),
+              ),
+            );
+
+            _fetchFeed();
+          }
+
+          if (state is DeleteFeedFailure) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
         },
         builder: (context, state) {
           if (state is FetchFeedLoading) {
@@ -249,7 +270,9 @@ class _FeedScreenState extends State<FeedScreen> {
                       ? item.files!.first.image ?? ""
                       : "",
                   onEdit: () {},
-                  onDelete: () {},
+                  onDelete: () {
+                    showDeleteDialog(item.feedId!);
+                  },
                 );
               },
             );

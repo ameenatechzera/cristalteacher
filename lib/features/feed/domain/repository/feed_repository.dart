@@ -8,4 +8,5 @@ abstract class FeedRepository {
   ResultFuture<FetchFeedEntity> fetchFeed(FetchFeedParams params);
 
   ResultFuture<MasterResponseModel> saveFeed(SaveFeedParameter request);
+  ResultFuture<MasterResponseModel> deleteFeed(int id);
 }

@@ -36,9 +36,7 @@ class SaveAttendanceFailure extends AttendanceState {
 
   const SaveAttendanceFailure(this.message);
 }
-// ─────────────────────────────────────────────
 // Attendance Report
-// ─────────────────────────────────────────────
 
 class AttendanceReportLoading extends AttendanceState {}
 

@@ -7,6 +7,7 @@ import 'package:cristalteacher/features/exams/domain/entities/get_all_exam_entit
 import 'package:cristalteacher/features/exams/domain/entities/save_exammarks_entiity.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/fetch_exam_parameter.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/save_exam_parameter.dart';
+import 'package:cristalteacher/features/exams/domain/parameters/update_exam_parameter.dart';
 import 'package:dartz/dartz.dart';
 import 'package:cristalteacher/core/errors/exceptions.dart';
 import 'package:cristalteacher/core/utils/typedef.dart';
@@ -65,6 +66,18 @@ class ExamRepositoryImpl implements ExamRepository {
   ResultFuture<MasterResponseModel> deleteExamMark(int id) async {
     try {
       final result = await _remoteDataSource.deleteExams(id);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<MasterResponseModel> updateMarkEntry(
+    UpdateMarkEntryParameter params,
+  ) async {
+    try {
+      final result = await _remoteDataSource.updateExamMarks(params);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.toString()));

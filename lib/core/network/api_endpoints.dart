@@ -81,4 +81,12 @@ class ApiConstants {
   static String deleteDiaryPath(String baseUrl) {
     return '${baseUrl}delete-classdiary/';
   }
+
+  static String getDeleteFeedPath(String baseUrl) {
+    return '${baseUrl}delete-feedmaster/';
+  }
+
+  static String updateExamMarksPath(String baseUrl) {
+    return '${baseUrl}exam-mark-entry/update/';
+  }
 }

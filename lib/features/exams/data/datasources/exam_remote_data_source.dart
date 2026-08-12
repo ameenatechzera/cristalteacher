@@ -11,6 +11,7 @@ import 'package:cristalteacher/features/exams/data/models/get_all_exam_model.dar
 import 'package:cristalteacher/features/exams/data/models/save_exam_model.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/fetch_exam_parameter.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/save_exam_parameter.dart';
+import 'package:cristalteacher/features/exams/domain/parameters/update_exam_parameter.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:dio/dio.dart';
 
@@ -20,6 +21,7 @@ abstract class ExamRemoteDataSource {
   Future<GetAllExamResponseModel> getAllExams();
   Future saveExamMarks(SaveExamMarksParameter params);
   Future<MasterResponseModel> deleteExams(int id);
+  Future<MasterResponseModel> updateExamMarks(UpdateMarkEntryParameter params);
 }
 
 class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
@@ -306,6 +308,125 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
       }
     } catch (e, stacktrace) {
       print('❌ Exception in deleteExamMark: $e');
+      print(stacktrace);
+      rethrow;
+    }
+  }
+
+  // @override
+  // Future<MasterResponseModel> updateExamMarks(
+  //   UpdateMarkEntryParameter params,
+  //   int examId,
+  // ) async {
+  //   print('✏️ Update Exam Marks Called');
+  //   print('UpdateMarkEntryParameter: ${params.toJson()}');
+
+  //   try {
+  //     /// Base URL
+  //     final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+  //     if (baseUrl == null || baseUrl.isEmpty) {
+  //       throw Exception("Base URL not set");
+  //     }
+
+  //     /// API URL
+  //     final url = '${ApiConstants.updateExamMarksPath(baseUrl)}$examId';
+
+  //     print("✏️ Update Exam Marks URL: $url");
+
+  //     /// Headers
+  //     final options = await ApiHelper.getAuthOptions(withToken: true);
+
+  //     /// API Call
+  //     final response = await dio.post(
+  //       url,
+  //       data: params.toJson(),
+  //       options: options,
+  //     );
+
+  //     print('✏️ Status Code: ${response.statusCode}');
+
+  //     final responseString = jsonEncode(response.data);
+
+  //     const chunkSize = 800;
+
+  //     for (int i = 0; i < responseString.length; i += chunkSize) {
+  //       print(
+  //         responseString.substring(
+  //           i,
+  //           i + chunkSize > responseString.length
+  //               ? responseString.length
+  //               : i + chunkSize,
+  //         ),
+  //       );
+  //     }
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       return MasterResponseModel.fromJson(response.data);
+  //     } else {
+  //       throw ServerException(
+  //         errorMessageModel: ErrorMessageModel.fromJson(response.data),
+  //       );
+  //     }
+  //   } catch (e, stacktrace) {
+  //     print('❌ Exception in updateExamMarks: $e');
+  //     print(stacktrace);
+  //     rethrow;
+  //   }
+  // }
+  @override
+  Future<MasterResponseModel> updateExamMarks(
+    UpdateMarkEntryParameter params,
+  ) async {
+    print('✏️ Update Exam Marks Called');
+    print('UpdateMarkEntryParameter: ${params.toJson()}');
+
+    try {
+      final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("Base URL not set");
+      }
+
+      final url =
+          '${ApiConstants.updateExamMarksPath(baseUrl)}${params.markEntryId}';
+
+      print("✏️ Update Exam Marks URL: $url");
+
+      final options = await ApiHelper.getAuthOptions(withToken: true);
+
+      final response = await dio.post(
+        url,
+        data: params.toJson(),
+        options: options,
+      );
+
+      print('✏️ Status Code: ${response.statusCode}');
+
+      final responseString = jsonEncode(response.data);
+
+      const chunkSize = 800;
+
+      for (int i = 0; i < responseString.length; i += chunkSize) {
+        print(
+          responseString.substring(
+            i,
+            i + chunkSize > responseString.length
+                ? responseString.length
+                : i + chunkSize,
+          ),
+        );
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return MasterResponseModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(response.data),
+        );
+      }
+    } catch (e, stacktrace) {
+      print('❌ Exception in updateExamMarks: $e');
       print(stacktrace);
       rethrow;
     }

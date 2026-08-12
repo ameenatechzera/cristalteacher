@@ -31,7 +31,8 @@ class ExamDetailsScreen extends StatefulWidget {
 
   final int maxTe;
   final int maxCe;
-
+  final bool isEditMode;
+  final int? markEntryId;
   const ExamDetailsScreen({
     super.key,
     required this.request,
@@ -48,6 +49,8 @@ class ExamDetailsScreen extends StatefulWidget {
     required this.subjectName,
     required this.maxTe,
     required this.maxCe,
+    this.isEditMode = false,
+    this.markEntryId,
   });
 
   @override
@@ -210,7 +213,7 @@ class _ExamDetailsScreenState extends State<ExamDetailsScreen> {
         te: student.teController.text.trim(),
         ce: student.ceController.text.trim(),
         grade: student.grade,
-        absent: student.isPresent ? '0' : '1',
+        absent: student.isPresent ? 'Y' : 'N',
         status: true,
         narration: student.narrationController.text.trim(),
         isOptional: null,

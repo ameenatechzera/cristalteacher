@@ -4,6 +4,7 @@ import 'package:cristalteacher/features/authentication/domain/entities/class_det
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetch_gradeplan_entity.dart';
+import 'package:cristalteacher/features/exams/domain/entities/fetchexam_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/get_all_exam_entity.dart';
 import 'package:cristalteacher/features/exams/presentation/cubit/exam_cubit.dart';
 import 'package:cristalteacher/features/exams/presentation/screens/exam_details_screen.dart';
@@ -12,9 +13,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 class SelectExamScreen extends StatefulWidget {
-  const SelectExamScreen({super.key, this.onNext});
+  const SelectExamScreen({super.key, this.onNext, this.exam});
 
   final VoidCallback? onNext;
+  final MarkEntryEntity? exam;
 
   @override
   State<SelectExamScreen> createState() => _SelectExamScreenState();
@@ -58,7 +60,9 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
   static const Color fieldColor = Color(0xFFF0F4FF);
   static const Color purpleColor = Color(0xFF7265FF);
   static const Color textColor = Color(0xFF414141);
+  bool get isEditMode => widget.exam != null;
 
+  int? markEntryId;
   String? selectedExam;
   String? selectedGrade;
 
@@ -86,6 +90,38 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
     return '${date.day.toString().padLeft(2, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
         '${date.year}';
+  }
+
+  void _populateEditData() {
+    final exam = widget.exam;
+
+    if (exam == null) return;
+
+    setState(() {
+      markEntryId = exam.markEntryId;
+
+      selectedExamId = exam.examId;
+      selectedExam = exam.examName;
+
+      selectedGradePlanId = exam.gradePlanId;
+
+      selectedStandardId = exam.standardId;
+      selectedStandard = exam.standard;
+
+      selectedDivisionId = exam.divisionId;
+      selectedDivision = exam.division;
+
+      selectedSubjectId = exam.subjectId;
+      selectedSubject = exam.subjectName;
+
+      maxTeController.text = exam.maxTE?.toString() ?? '';
+      maxCeController.text = exam.maxCE?.toString() ?? '';
+
+      // Convert String? → DateTime?
+      if (exam.examDate != null && exam.examDate!.isNotEmpty) {
+        selectedDate = DateTime.tryParse(exam.examDate!.replaceFirst(' ', 'T'));
+      }
+    });
   }
 
   List<DivisionDetails> get availableDivisions {
@@ -469,6 +505,26 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
     debugPrint('Max CE: $maxCe');
     debugPrint('Student request: ${request.toJson()}');
 
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (_) => ExamDetailsScreen(
+    //       request: request,
+    //       examId: selectedExamId!,
+    //       examName: selectedExam!,
+    //       gradePlanId: selectedGradePlanId!,
+    //       gradePlanName: selectedGrade!,
+    //       examDate: selectedDate!,
+    //       standardId: selectedStandardId!,
+    //       standardName: selectedStandard!,
+    //       divisionId: selectedDivisionId!,
+    //       divisionName: selectedDivision!,
+    //       subjectId: selectedSubjectId!,
+    //       subjectName: selectedSubject!,
+    //       maxTe: maxTe,
+    //       maxCe: maxCe,
+    //     ),
+    //   ),
+    // );
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ExamDetailsScreen(
@@ -486,6 +542,10 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
           subjectName: selectedSubject!,
           maxTe: maxTe,
           maxCe: maxCe,
+
+          // EDIT
+          isEditMode: isEditMode,
+          markEntryId: markEntryId,
         ),
       ),
     );

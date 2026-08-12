@@ -87,3 +87,19 @@ class DeleteExamMarkFailure extends ExamState {
 
   const DeleteExamMarkFailure(this.message);
 }
+
+class UpdateMarkEntryLoading extends ExamState {
+  const UpdateMarkEntryLoading();
+}
+
+class UpdateMarkEntrySuccess extends ExamState {
+  final MasterResponseModel response;
+
+  const UpdateMarkEntrySuccess(this.response);
+}
+
+class UpdateMarkEntryFailure extends ExamState {
+  final String message;
+
+  const UpdateMarkEntryFailure(this.message);
+}

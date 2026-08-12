@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/features/feed/domain/parameters/save_feed_parameter.dart';
+import 'package:cristalteacher/features/feed/domain/usecases/delete_feed_usecase.dart';
 import 'package:cristalteacher/features/feed/domain/usecases/save_feed_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:cristalteacher/features/feed/domain/entities/fetch_feed_entity.dart';
@@ -12,12 +13,15 @@ part 'feed_state.dart';
 class FeedCubit extends Cubit<FeedState> {
   final FetchFeedUseCase _fetchFeedUseCase;
   final SaveFeedUseCase _saveFeedUseCase;
+  final DeleteFeedUseCase _deleteFeedUseCase;
 
   FeedCubit({
     required FetchFeedUseCase fetchFeedUseCase,
     required SaveFeedUseCase saveFeedUseCase,
+    required DeleteFeedUseCase deleteFeedUseCase,
   }) : _fetchFeedUseCase = fetchFeedUseCase,
        _saveFeedUseCase = saveFeedUseCase,
+       _deleteFeedUseCase = deleteFeedUseCase,
        super(FeedInitial());
 
   Future<void> fetchFeed(FetchFeedParams request) async {
@@ -73,6 +77,38 @@ class FeedCubit extends Cubit<FeedState> {
       print(stackTrace);
 
       emit(const SaveFeedFailure('An unexpected error occurred'));
+    }
+  }
+
+  Future<void> deleteFeed(int id) async {
+    print('📘 Delete Feed Called');
+    print('📘 Feed ID: $id');
+
+    emit(DeleteFeedLoading());
+
+    try {
+      final result = await _deleteFeedUseCase(id);
+
+      result.fold(
+        (failure) {
+          print('❌ Delete Feed Failed');
+          print(failure.message);
+
+          emit(DeleteFeedFailure(failure.message));
+        },
+        (response) {
+          print('✅ Delete Feed Success');
+          print('Response: ${response.toJson()}');
+
+          emit(DeleteFeedSuccess(response));
+        },
+      );
+    } catch (e, stackTrace) {
+      print('❌ Exception during deleteFeed');
+      print(e);
+      print(stackTrace);
+
+      emit(const DeleteFeedFailure('An unexpected error occurred'));
     }
   }
 }
