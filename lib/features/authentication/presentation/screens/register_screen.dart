@@ -48,14 +48,14 @@ class RegisterCodePage extends StatelessWidget {
                   //   ),
                   // ),
 
-                  // Logo
-                  // Center(
-                  //   child: Image.asset(
-                  //     'assets/images/cristal_white.png',
-                  //     height: 60,
-                  //     fit: BoxFit.contain,
-                  //   ),
-                  // ),
+                  //Logo
+                  Center(
+                    child: Image.asset(
+                      'assets/images/cristal_white.png',
+                      height: 60,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ],
               ),
             ),

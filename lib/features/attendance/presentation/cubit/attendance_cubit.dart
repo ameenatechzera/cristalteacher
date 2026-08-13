@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/features/attendance/domain/entities/attendance_report_entity.dart';
 import 'package:cristalteacher/features/attendance/domain/entities/fetch_attendancedetails_entity.dart';
+import 'package:cristalteacher/features/attendance/domain/parameters/attendance_report_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/fetch_attendancedetails_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/save_attendance_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendance_report_usecase.dart';
@@ -83,13 +84,15 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     }
   }
 
-  Future fetchAttendanceReport() async {
+  Future fetchAttendanceReport(AttendanceReportParameter params) async {
     print('📘 Fetch Attendance Report Called');
+    print('📘 Fetch Attendance Report Called');
+    print('Request: ${params.toJson()}');
 
     emit(AttendanceReportLoading());
 
     try {
-      final result = await _fetchAttendanceReportUseCase();
+      final result = await _fetchAttendanceReportUseCase(params);
 
       result.fold(
         (failure) {

@@ -8,8 +8,8 @@ class FetchTutorshipClassEntity {
 
 class TutorshipClassData {
   final List<TutorshipClass>? tutorshipClass;
-
-  TutorshipClassData({this.tutorshipClass});
+  final List<TutorshipClass>? standard;
+  TutorshipClassData({this.tutorshipClass, this.standard});
 }
 
 class TutorshipClass {

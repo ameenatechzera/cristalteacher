@@ -14,7 +14,6 @@ class ExamDetailsScreen extends StatefulWidget {
   final AttendanceDetailsRequest request;
   final int examId;
   final String examName;
-
   final int gradePlanId;
   final String gradePlanName;
 

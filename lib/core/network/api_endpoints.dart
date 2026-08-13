@@ -71,7 +71,7 @@ class ApiConstants {
   }
 
   static String getAttendanceReportPath(String baseUrl) {
-    return '${baseUrl}StudentAttendanceMaster/1';
+    return '${baseUrl}app/teacher-wise-attendance';
   }
 
   static String deleteExamMarkPath(String baseUrl) {

@@ -1161,12 +1161,27 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
                       return const Center(child: CircularProgressIndicator());
                     }
 
+                    // if (state is FetchTutorshipClassSuccess) {
+                    //   final classes = state.response.data?.tutorshipClass ?? [];
+
+                    //   final List<Map<String, dynamic>> classList = [];
+
+                    //   for (final standard in classes) {
+                    //     for (final division in standard.division ?? []) {
+                    //       classList.add({
+                    //         'standardId': standard.standardId,
+                    //         'standardName': standard.standard,
+                    //         'division': division,
+                    //       });
+                    //     }
+                    //   }
                     if (state is FetchTutorshipClassSuccess) {
-                      final classes = state.response.data?.tutorshipClass ?? [];
+                      final List<TutorshipClass> standards =
+                          state.response.data?.standard ?? [];
 
                       final List<Map<String, dynamic>> classList = [];
 
-                      for (final standard in classes) {
+                      for (final standard in standards) {
                         for (final division in standard.division ?? []) {
                           classList.add({
                             'standardId': standard.standardId,
@@ -1175,7 +1190,17 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
                           });
                         }
                       }
-
+                      if (classList.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No classes found',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        );
+                      }
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),

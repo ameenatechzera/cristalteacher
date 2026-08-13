@@ -1,11 +1,7 @@
 import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 
 class FetchTutorshipClassResponseModel extends FetchTutorshipClassEntity {
-  FetchTutorshipClassResponseModel({
-    super.status,
-    super.error,
-    TutorshipClassDataModel? super.data,
-  });
+  FetchTutorshipClassResponseModel({super.status, super.error, super.data});
 
   factory FetchTutorshipClassResponseModel.fromJson(Map<String, dynamic> json) {
     return FetchTutorshipClassResponseModel(
@@ -21,7 +17,7 @@ class FetchTutorshipClassResponseModel extends FetchTutorshipClassEntity {
 }
 
 class TutorshipClassDataModel extends TutorshipClassData {
-  TutorshipClassDataModel({List<TutorshipClassModel>? super.tutorshipClass});
+  TutorshipClassDataModel({super.tutorshipClass, super.standard});
 
   factory TutorshipClassDataModel.fromJson(Map<String, dynamic> json) {
     return TutorshipClassDataModel(
@@ -33,16 +29,15 @@ class TutorshipClassDataModel extends TutorshipClassData {
                       TutorshipClassModel.fromJson(e as Map<String, dynamic>),
                 )
                 .toList(),
+      standard: (json['Standard'] as List?)
+          ?.map((e) => TutorshipClassModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
 
 class TutorshipClassModel extends TutorshipClass {
-  TutorshipClassModel({
-    super.standardId,
-    super.standard,
-    List<DivisionDetailsModel>? super.division,
-  });
+  TutorshipClassModel({super.standardId, super.standard, super.division});
 
   factory TutorshipClassModel.fromJson(Map<String, dynamic> json) {
     return TutorshipClassModel(
@@ -61,11 +56,7 @@ class TutorshipClassModel extends TutorshipClass {
 }
 
 class DivisionDetailsModel extends DivisionDetails {
-  DivisionDetailsModel({
-    super.divisionId,
-    super.division,
-    List<SubjectDetailsModel>? super.subject,
-  });
+  DivisionDetailsModel({super.divisionId, super.division, super.subject});
 
   factory DivisionDetailsModel.fromJson(Map<String, dynamic> json) {
     return DivisionDetailsModel(
