@@ -38,7 +38,7 @@ class RegisterCodePage extends StatelessWidget {
                   //   top: 10,
                   //   bottom: 10,
                   //   child: Opacity(
-                  //     opacity: 0.99, // 👈 adjust visibility
+                  //     opacity: 0.99, //
                   //     child: Image.asset(
                   //       "assets/images/mask_bg.png",
                   //       color: Colors.white,

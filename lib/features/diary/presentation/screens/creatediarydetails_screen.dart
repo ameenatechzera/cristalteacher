@@ -1568,44 +1568,199 @@ class _SelectYourClassScreenState extends State<SelectYourClassScreen> {
     return files;
   }
 
+  // Future<void> _saveDiary() async {
+  //   FocusScope.of(context).unfocus();
+
+  //   final String title = _titleController.text.trim();
+  //   final String description = _descriptionController.text.trim();
+
+  //   if (voiceState == VoiceState.recording) {
+  //     _showMessage('Please stop the voice recording before saving');
+  //     return;
+  //   }
+
+  //   if (title.isEmpty) {
+  //     _showMessage('Please enter Heading or Title');
+  //     return;
+  //   }
+
+  //   if (description.isEmpty) {
+  //     _showMessage('Please enter Description');
+  //     return;
+  //   }
+
+  //   if (AppData.accYear == null) {
+  //     _showMessage('Academic year is not available');
+  //     return;
+  //   }
+
+  //   if (AppData.employeeId == null) {
+  //     _showMessage('Employee ID is not available');
+  //     return;
+  //   }
+
+  //   try {
+  //     final List<String> apiFiles = await _buildApiFiles();
+
+  //     final SaveDiaryParameter request = SaveDiaryParameter(
+  //       accYear: AppData.accYear!,
+  //       standardId: 0,
+  //       divisionId: 0,
+  //       subjectId: widget.subjectId,
+  //       employeeId: AppData.employeeId!,
+  //       diaryType: 1,
+  //       diaryTitle: title,
+  //       description: description,
+  //       diaryDate: formatApiDate(widget.diaryDate),
+  //       dueDate: formatApiDate(widget.dueDate),
+  //       isActive: true,
+  //       isFavourite: widget.isFavourite,
+  //       branchId: AppData.branchId ?? 1,
+  //       createdUser: AppData.userId.toString(),
+  //       files: apiFiles,
+  //       videoUrl: '',
+  //     );
+
+  //     debugPrint('==========================================');
+  //     debugPrint('📘 SAVE DIARY REQUEST');
+  //     debugPrint('AccYear: ${AppData.accYear}');
+  //     debugPrint('Standard ID: ${widget.standardId}');
+  //     debugPrint('Division ID: ${widget.divisionId}');
+  //     debugPrint('Subject ID: ${widget.subjectId}');
+  //     debugPrint('Employee ID: ${AppData.employeeId}');
+  //     debugPrint('Diary Type: 1');
+  //     debugPrint('Diary Title: $title');
+  //     debugPrint('Description: $description');
+  //     debugPrint('Diary Date: ${formatApiDate(widget.diaryDate)}');
+  //     debugPrint('Due Date: ${formatApiDate(widget.dueDate)}');
+  //     debugPrint('Is Active: true');
+  //     debugPrint('Is Favourite: ${widget.isFavourite}');
+  //     debugPrint('Branch ID: ${AppData.branchId ?? 1}');
+  //     debugPrint('Created User: ""');
+  //     debugPrint('Attachment count: ${apiFiles.length}');
+  //     debugPrint('Video URL: ""');
+  //     debugPrint('==========================================');
+
+  //     if (!mounted) return;
+
+  //     await context.read<DiaryCubit>().saveDiary(request);
+  //   } catch (error, stackTrace) {
+  //     debugPrint('Prepare diary request error: $error');
+  //     debugPrintStack(stackTrace: stackTrace);
+
+  //     _showMessage('Unable to prepare attachments');
+  //   }
+  // }
   Future<void> _saveDiary() async {
     FocusScope.of(context).unfocus();
 
     final String title = _titleController.text.trim();
     final String description = _descriptionController.text.trim();
 
+    debugPrint('');
+    debugPrint('==================================================');
+    debugPrint('📘 SAVE DIARY BUTTON PRESSED');
+    debugPrint('==================================================');
+
+    debugPrint('📌 WIDGET VALUES');
+    debugPrint('Standard ID   : ${widget.standardId}');
+    debugPrint('Standard Name : ${widget.standardName}');
+    debugPrint('Division ID   : ${widget.divisionId}');
+    debugPrint('Division Name : ${widget.divisionName}');
+    debugPrint('Subject ID    : ${widget.subjectId}');
+    debugPrint('Subject Name  : ${widget.subjectName}');
+    debugPrint('Diary Date    : ${formatApiDate(widget.diaryDate)}');
+    debugPrint('Due Date      : ${formatApiDate(widget.dueDate)}');
+    debugPrint('Favourite     : ${widget.isFavourite}');
+
+    debugPrint('');
+    debugPrint('📌 FORM VALUES');
+    debugPrint('Title         : $title');
+    debugPrint('Description   : $description');
+    debugPrint('Voice State   : $voiceState');
+    debugPrint('Selected Files: ${_selectedFiles.length}');
+
     if (voiceState == VoiceState.recording) {
+      debugPrint('❌ SAVE STOPPED: Voice recording is still running');
       _showMessage('Please stop the voice recording before saving');
       return;
     }
 
     if (title.isEmpty) {
+      debugPrint('❌ SAVE STOPPED: Title is empty');
       _showMessage('Please enter Heading or Title');
       return;
     }
 
     if (description.isEmpty) {
+      debugPrint('❌ SAVE STOPPED: Description is empty');
       _showMessage('Please enter Description');
       return;
     }
 
     if (AppData.accYear == null) {
+      debugPrint('❌ SAVE STOPPED: Academic year is null');
       _showMessage('Academic year is not available');
       return;
     }
 
     if (AppData.employeeId == null) {
+      debugPrint('❌ SAVE STOPPED: Employee ID is null');
       _showMessage('Employee ID is not available');
       return;
     }
 
     try {
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('🟡 BUILDING API FILES');
+      debugPrint('==================================================');
+
       final List<String> apiFiles = await _buildApiFiles();
+
+      debugPrint('Attachment count: ${apiFiles.length}');
+
+      for (int i = 0; i < apiFiles.length; i++) {
+        final String file = apiFiles[i];
+
+        debugPrint('');
+        debugPrint('File ${i + 1}');
+        debugPrint('Length     : ${file.length}');
+        debugPrint(
+          'Header     : ${file.length > 30 ? file.substring(0, 30) : file}',
+        );
+      }
+
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('🟡 VALUES BEFORE SaveDiaryParameter');
+      debugPrint('==================================================');
+
+      debugPrint('AccYear       : ${AppData.accYear}');
+      debugPrint('Standard ID   : ${widget.standardId}');
+      debugPrint('Division ID   : ${widget.divisionId}');
+      debugPrint('Subject ID    : ${widget.subjectId}');
+      debugPrint('Employee ID   : ${AppData.employeeId}');
+      debugPrint('Diary Type    : 1');
+      debugPrint('Diary Title   : $title');
+      debugPrint('Description   : $description');
+      debugPrint('Diary Date    : ${formatApiDate(widget.diaryDate)}');
+      debugPrint('Due Date      : ${formatApiDate(widget.dueDate)}');
+      debugPrint('Is Active     : true');
+      debugPrint('Is Favourite  : ${widget.isFavourite}');
+      debugPrint('Branch ID     : ${AppData.branchId ?? 1}');
+      debugPrint('Created User  : ${AppData.userId}');
+      debugPrint('Video URL     : ""');
 
       final SaveDiaryParameter request = SaveDiaryParameter(
         accYear: AppData.accYear!,
+
+        // IMPORTANT:
+        // Previously these were 0.
+        // Now passing the actual values received by this screen.
         standardId: widget.standardId,
         divisionId: widget.divisionId,
+
         subjectId: widget.subjectId,
         employeeId: AppData.employeeId!,
         diaryType: 1,
@@ -1616,37 +1771,98 @@ class _SelectYourClassScreenState extends State<SelectYourClassScreen> {
         isActive: true,
         isFavourite: widget.isFavourite,
         branchId: AppData.branchId ?? 1,
-        createdUser: '',
+        createdUser: AppData.userId.toString(),
         files: apiFiles,
         videoUrl: '',
       );
 
-      debugPrint('==========================================');
-      debugPrint('📘 SAVE DIARY REQUEST');
-      debugPrint('AccYear: ${AppData.accYear}');
-      debugPrint('Standard ID: ${widget.standardId}');
-      debugPrint('Division ID: ${widget.divisionId}');
-      debugPrint('Subject ID: ${widget.subjectId}');
-      debugPrint('Employee ID: ${AppData.employeeId}');
-      debugPrint('Diary Type: 1');
-      debugPrint('Diary Title: $title');
-      debugPrint('Description: $description');
-      debugPrint('Diary Date: ${formatApiDate(widget.diaryDate)}');
-      debugPrint('Due Date: ${formatApiDate(widget.dueDate)}');
-      debugPrint('Is Active: true');
-      debugPrint('Is Favourite: ${widget.isFavourite}');
-      debugPrint('Branch ID: ${AppData.branchId ?? 1}');
-      debugPrint('Created User: ""');
-      debugPrint('Attachment count: ${apiFiles.length}');
-      debugPrint('Video URL: ""');
-      debugPrint('==========================================');
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('🟢 SaveDiaryParameter CREATED');
+      debugPrint('==================================================');
+
+      debugPrint('Parameter Object: $request');
+
+      debugPrint('');
+      debugPrint('📦 PARAMETER toJson()');
+      debugPrint('--------------------------------------------------');
+
+      final Map<String, dynamic> requestJson = request.toJson();
+
+      requestJson.forEach((key, value) {
+        if (key == 'files') {
+          final List<dynamic> files = value is List ? value : [];
+
+          debugPrint('$key : ${files.length} file(s)');
+
+          for (int i = 0; i < files.length; i++) {
+            final String file = files[i].toString();
+
+            debugPrint(
+              '  File ${i + 1}: '
+              '${file.length > 40 ? file.substring(0, 40) : file}',
+            );
+          }
+        } else {
+          debugPrint('$key : $value');
+        }
+      });
+
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('🔍 ID VERIFICATION');
+      debugPrint('==================================================');
+
+      debugPrint('Widget Standard ID : ${widget.standardId}');
+      debugPrint('Request Standard ID: ${request.standardId}');
+
+      debugPrint('Widget Division ID : ${widget.divisionId}');
+      debugPrint('Request Division ID: ${request.divisionId}');
+
+      debugPrint('Widget Subject ID  : ${widget.subjectId}');
+      debugPrint('Request Subject ID : ${request.subjectId}');
+
+      if (request.standardId != widget.standardId) {
+        debugPrint('❌ ERROR: Standard ID changed while creating request!');
+      } else {
+        debugPrint('✅ Standard ID is correct');
+      }
+
+      if (request.divisionId != widget.divisionId) {
+        debugPrint('❌ ERROR: Division ID changed while creating request!');
+      } else {
+        debugPrint('✅ Division ID is correct');
+      }
+
+      if (request.subjectId != widget.subjectId) {
+        debugPrint('❌ ERROR: Subject ID changed while creating request!');
+      } else {
+        debugPrint('✅ Subject ID is correct');
+      }
+
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('🚀 CALLING DiaryCubit.saveDiary()');
+      debugPrint('==================================================');
 
       if (!mounted) return;
 
       await context.read<DiaryCubit>().saveDiary(request);
+
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('🟢 DiaryCubit.saveDiary() COMPLETED');
+      debugPrint('==================================================');
     } catch (error, stackTrace) {
-      debugPrint('Prepare diary request error: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      debugPrint('');
+      debugPrint('==================================================');
+      debugPrint('❌ PREPARE DIARY REQUEST ERROR');
+      debugPrint('==================================================');
+
+      debugPrint('Error: $error');
+      debugPrint('StackTrace: $stackTrace');
+
+      debugPrint('==================================================');
 
       _showMessage('Unable to prepare attachments');
     }

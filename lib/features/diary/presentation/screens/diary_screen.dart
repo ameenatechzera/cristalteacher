@@ -49,7 +49,7 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
       accyear: AppData.accYear!,
       fromDate: currentDate,
       toDate: currentDate,
-      userId: '1', //AppData.userId.toString(),
+      userId: AppData.employeeId.toString(),
     );
 
     debugPrint('====================================');

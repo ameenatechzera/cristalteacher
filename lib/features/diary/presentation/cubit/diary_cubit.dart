@@ -93,22 +93,29 @@ class DiaryCubit extends Cubit<DiaryState> {
       result.fold(
         (failure) {
           print('❌ Save Diary Failed');
-          print(failure.message);
+          print('Failure Message: ${failure.message}');
 
           emit(DiaryFailure(failure.message));
         },
         (response) {
-          print('✅ Save Diary Success');
-          print('Status: ${response.status}');
-          print('Message: ${response.error}');
+          print('==========================================');
+          print('✅ SAVE DIARY SUCCESS');
+          print('==========================================');
+          print('📌 Status  : ${response.status}');
+          print('📌 Error   : ${response.error}');
+          print('📌 Message : ${response.message}');
+          print('==========================================');
 
           emit(SaveDiarySuccess(response));
         },
       );
     } catch (e, stackTrace) {
-      print('❌ Exception during Save Diary');
-      print(e);
-      print(stackTrace);
+      print('==========================================');
+      print('❌ EXCEPTION DURING SAVE DIARY');
+      print('==========================================');
+      print('Error: $e');
+      print('StackTrace: $stackTrace');
+      print('==========================================');
 
       emit(const DiaryFailure('An unexpected error occurred'));
     }
