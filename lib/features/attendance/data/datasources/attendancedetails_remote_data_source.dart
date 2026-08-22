@@ -7,9 +7,11 @@ import 'package:cristalteacher/core/network/api_endpoints.dart';
 import 'package:cristalteacher/core/network/api_helper.dart';
 import 'package:cristalteacher/features/attendance/data/models/attendance_report_model.dart';
 import 'package:cristalteacher/features/attendance/data/models/fetch_attendancedetails_model.dart';
+import 'package:cristalteacher/features/attendance/data/models/studentattendance_response_model.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/attendance_report_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/fetch_attendancedetails_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/save_attendance_parameter.dart';
+import 'package:cristalteacher/features/attendance/domain/parameters/update_studentattendance_parameter.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:dio/dio.dart';
 
@@ -20,6 +22,11 @@ abstract class AttendanceRemoteDataSource {
   Future<MasterResponseModel> saveAttendance(SaveAttendanceRequest params);
   Future<AttendanceReportResponseModel> fetchAttendanceReport(
     AttendanceReportParameter params,
+  );
+  Future<StudentAttendanceResponseModel> fetchStudentAttendance(int studentId);
+  Future<MasterResponseModel> updateStudentAttendance(
+    int studentAttendanceMasterId,
+    UpdateStudentAttendanceParameter params,
   );
 }
 
@@ -247,6 +254,152 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       }
     } catch (e, stacktrace) {
       print('❌ Exception in fetchAttendanceReport: $e');
+      print(stacktrace);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<StudentAttendanceResponseModel> fetchStudentAttendance(
+    int studentId,
+  ) async {
+    print('📘 Fetch Student Attendance Called');
+    print('📌 Student ID: $studentId');
+
+    try {
+      final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("Base URL not set");
+      }
+
+      final basePath = ApiConstants.getStudentAttendancePath(baseUrl);
+
+      // Append ID to URL
+      final url = '$basePath$studentId';
+
+      print('📘 URL: $url');
+
+      final options = await ApiHelper.getAuthOptions(withToken: true);
+
+      // No body
+      final response = await dio.get(url, options: options);
+
+      print('📘 Status Code: ${response.statusCode}');
+      print('📘 Response Data: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return StudentAttendanceResponseModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(response.data),
+        );
+      }
+    } catch (e, stackTrace) {
+      print('❌ Exception in fetchStudentAttendance: $e');
+      print(stackTrace);
+      rethrow;
+    }
+  }
+  // @override
+  // Future<StudentAttendanceResponseModel> fetchStudentAttendance(
+  //   int studentId,
+  // ) async {
+  //   print('📘 Fetch Student Attendance Called');
+  //   print('📌 Student ID: $studentId');
+
+  //   try {
+  //     final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+  //     if (baseUrl == null || baseUrl.isEmpty) {
+  //       throw Exception("Base URL not set");
+  //     }
+
+  //     final url = ApiConstants.getStudentAttendancePath(baseUrl);
+
+  //     print('📘 URL: $url');
+
+  //     final options = await ApiHelper.getAuthOptions(withToken: true);
+
+  //     final requestData = {'studentId': studentId};
+
+  //     print('📦 Request: $requestData');
+
+  //     final response = await dio.get(url, data: requestData, options: options);
+
+  //     print('📘 Status Code: ${response.statusCode}');
+  //     print('📘 Response Data: ${response.data}');
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       return StudentAttendanceResponseModel.fromJson(response.data);
+  //     } else {
+  //       throw ServerException(
+  //         errorMessageModel: ErrorMessageModel.fromJson(response.data),
+  //       );
+  //     }
+  //   } catch (e, stackTrace) {
+  //     print('❌ Exception in fetchStudentAttendance: $e');
+  //     print(stackTrace);
+  //     rethrow;
+  //   }
+  // }
+
+  @override
+  Future<MasterResponseModel> updateStudentAttendance(
+    int studentAttendanceMasterId,
+    UpdateStudentAttendanceParameter params,
+  ) async {
+    print('✏️ Update Student Attendance Called');
+    print('📌 Student Attendance ID: $studentAttendanceMasterId');
+    print('UpdateStudentAttendanceParameter: ${params.toJson()}');
+
+    try {
+      final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("Base URL not set");
+      }
+
+      final url =
+          '${ApiConstants.getUpdateStudentAttendancePath(baseUrl)}'
+          '$studentAttendanceMasterId';
+
+      print("✏️ Update Student Attendance URL: $url");
+
+      final options = await ApiHelper.getAuthOptions(withToken: true);
+
+      final response = await dio.post(
+        url,
+        data: params.toJson(),
+        options: options,
+      );
+
+      print('✏️ Status Code: ${response.statusCode}');
+
+      final responseString = jsonEncode(response.data);
+
+      const chunkSize = 800;
+
+      for (int i = 0; i < responseString.length; i += chunkSize) {
+        print(
+          responseString.substring(
+            i,
+            i + chunkSize > responseString.length
+                ? responseString.length
+                : i + chunkSize,
+          ),
+        );
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return MasterResponseModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(response.data),
+        );
+      }
+    } catch (e, stacktrace) {
+      print('❌ Exception in updateStudentAttendance: $e');
       print(stacktrace);
       rethrow;
     }

@@ -2,12 +2,16 @@ import 'package:bloc/bloc.dart';
 import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/features/attendance/domain/entities/attendance_report_entity.dart';
 import 'package:cristalteacher/features/attendance/domain/entities/fetch_attendancedetails_entity.dart';
+import 'package:cristalteacher/features/attendance/domain/entities/studentattendance_response_enttiy.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/attendance_report_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/fetch_attendancedetails_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/parameters/save_attendance_parameter.dart';
+import 'package:cristalteacher/features/attendance/domain/parameters/update_studentattendance_parameter.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendance_report_usecase.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendancedetails_usecase.dart';
+import 'package:cristalteacher/features/attendance/domain/usecases/fetch_student_attendance_usecase.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/save_attendance_usecase.dart';
+import 'package:cristalteacher/features/attendance/domain/usecases/update_studentattendance_usecase.dart';
 import 'package:equatable/equatable.dart';
 
 part 'attendance_state.dart';
@@ -16,14 +20,20 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   final AttendanceDetailsUseCase _attendanceDetailsUseCase;
   final SaveAttendanceUseCase _saveAttendanceUseCase;
   final FetchAttendanceReportUseCase _fetchAttendanceReportUseCase;
+  final FetchStudentAttendanceUseCase _fetchStudentAttendanceUseCase;
+  final UpdateStudentAttendanceUseCase _updateStudentAttendanceUseCase;
 
   AttendanceCubit({
     required AttendanceDetailsUseCase attendanceDetailsUseCase,
     required SaveAttendanceUseCase saveAttendanceUseCase,
     required FetchAttendanceReportUseCase fetchAttendanceReportUseCase,
+    required FetchStudentAttendanceUseCase fetchStudentAttendanceUseCase,
+    required UpdateStudentAttendanceUseCase updateStudentAttendanceUseCase,
   }) : _attendanceDetailsUseCase = attendanceDetailsUseCase,
        _saveAttendanceUseCase = saveAttendanceUseCase,
        _fetchAttendanceReportUseCase = fetchAttendanceReportUseCase,
+       _fetchStudentAttendanceUseCase = fetchStudentAttendanceUseCase,
+       _updateStudentAttendanceUseCase = updateStudentAttendanceUseCase,
        super(AttendanceInitial());
 
   Future<void> fetchAttendanceDetails(AttendanceDetailsRequest request) async {
@@ -112,6 +122,72 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       print(stacktrace);
 
       emit(const AttendanceReportFailure('An unexpected error occurred'));
+    }
+  }
+
+  Future<void> fetchStudentAttendance(int studentId) async {
+    print('📘 Fetch Student Attendance Called');
+    print('📌 Student ID: $studentId');
+
+    emit(StudentAttendanceLoading());
+
+    try {
+      final result = await _fetchStudentAttendanceUseCase(studentId);
+
+      result.fold(
+        (failure) {
+          print('❌ Student Attendance Failed');
+          print(failure.message);
+
+          emit(StudentAttendanceFailure(failure.message));
+        },
+        (response) {
+          print('✅ Student Attendance Success');
+          emit(StudentAttendanceSuccess(response));
+        },
+      );
+    } catch (e, stacktrace) {
+      print('❌ Exception during fetchStudentAttendance: $e');
+      print(stacktrace);
+
+      emit(const StudentAttendanceFailure('An unexpected error occurred'));
+    }
+  } // ---------------------------------------------------------------------------
+  // UPDATE STUDENT ATTENDANCE
+  // ---------------------------------------------------------------------------
+
+  Future<void> updateStudentAttendance(
+    UpdateStudentAttendanceParameter params,
+    int id,
+  ) async {
+    print('✏️ Update Student Attendance Called');
+    print('📌 Attendance ID: $id');
+    print('📦 Update Request: ${params.toJson()}');
+
+    emit(UpdateStudentAttendanceLoading());
+
+    try {
+      final result = await _updateStudentAttendanceUseCase(params, id);
+      result.fold(
+        (failure) {
+          print('❌ Update Student Attendance Failed');
+          print(failure.message);
+
+          emit(UpdateStudentAttendanceFailure(failure.message));
+        },
+        (response) {
+          print('✅ Update Student Attendance Success');
+
+          emit(UpdateStudentAttendanceSuccess(response));
+        },
+      );
+    } catch (e, stacktrace) {
+      print('❌ Exception during updateStudentAttendance: $e');
+      print(stacktrace);
+
+      emit(
+        const UpdateStudentAttendanceFailure('An unexpected error occurred'),
+      );
     }
   }
 }

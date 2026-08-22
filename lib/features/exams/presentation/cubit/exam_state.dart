@@ -103,3 +103,17 @@ class UpdateMarkEntryFailure extends ExamState {
 
   const UpdateMarkEntryFailure(this.message);
 }
+
+class FetchMarkEntryDetailsLoading extends ExamState {}
+
+class FetchMarkEntryDetailsSuccess extends ExamState {
+  final MarkEntryDetailsEntity response;
+
+  const FetchMarkEntryDetailsSuccess(this.response);
+}
+
+class FetchMarkEntryDetailsFailure extends ExamState {
+  final String message;
+
+  const FetchMarkEntryDetailsFailure(this.message);
+}

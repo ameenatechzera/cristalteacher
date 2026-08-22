@@ -3,10 +3,12 @@ import 'package:cristalteacher/features/attendance/presentation/screens/attendan
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/diary_screen.dart';
+import 'package:cristalteacher/features/earlygoing/presentation/screens/gatepass_screen.dart';
 import 'package:cristalteacher/features/exams/presentation/screens/exam_screen.dart';
 import 'package:cristalteacher/features/feed/presentation/screens/feed_screen.dart';
 import 'package:cristalteacher/features/materials/presentation/screens/materials_screen.dart';
 import 'package:cristalteacher/features/timetable/presentation/screens/timetable_screen.dart';
+import 'package:cristalteacher/features/workplan/presentation/screens/workplan_detials_screen.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,6 +68,22 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
       icon: Icons.folder_copy_rounded,
       color: const Color(0xFFDDF5C9),
       page: TimeTableScreen(),
+      // page: const SubjectPage(), // Use this if your material page is SubjectPage
+    ),
+    DashboardItem(
+      title: "GatePass",
+      subtitle: "GatePass",
+      icon: Icons.folder_copy_rounded,
+      color: const Color(0xFFDDF5C9),
+      page: GatePassScreen(),
+      // page: const SubjectPage(), // Use this if your material page is SubjectPage
+    ),
+    DashboardItem(
+      title: "WorkPlan",
+      subtitle: "WorkPlan",
+      icon: Icons.folder_copy_rounded,
+      color: const Color(0xFFDDF5C9),
+      page: WorkplanDetialsScreen(),
       // page: const SubjectPage(), // Use this if your material page is SubjectPage
     ),
   ];

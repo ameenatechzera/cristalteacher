@@ -4,6 +4,7 @@ import 'package:cristalteacher/features/exams/data/datasources/exam_remote_data_
 import 'package:cristalteacher/features/exams/domain/entities/fetch_gradeplan_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/fetchexam_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/get_all_exam_entity.dart';
+import 'package:cristalteacher/features/exams/domain/entities/markentry_detailsforupdate_entity.dart';
 import 'package:cristalteacher/features/exams/domain/entities/save_exammarks_entiity.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/fetch_exam_parameter.dart';
 import 'package:cristalteacher/features/exams/domain/parameters/save_exam_parameter.dart';
@@ -78,6 +79,18 @@ class ExamRepositoryImpl implements ExamRepository {
   ) async {
     try {
       final result = await _remoteDataSource.updateExamMarks(params);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<MarkEntryDetailsEntity> fetchMarkEntryDetails(
+    int markEntryId,
+  ) async {
+    try {
+      final result = await _remoteDataSource.fetchMarkEntryDetails(markEntryId);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.toString()));

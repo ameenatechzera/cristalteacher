@@ -3,7 +3,9 @@ import 'package:cristalteacher/features/attendance/data/repositories/attendance_
 import 'package:cristalteacher/features/attendance/domain/repositories/attendancedetails_repository.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendance_report_usecase.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/fetch_attendancedetails_usecase.dart';
+import 'package:cristalteacher/features/attendance/domain/usecases/fetch_student_attendance_usecase.dart';
 import 'package:cristalteacher/features/attendance/domain/usecases/save_attendance_usecase.dart';
+import 'package:cristalteacher/features/attendance/domain/usecases/update_studentattendance_usecase.dart';
 import 'package:cristalteacher/features/attendance/presentation/cubit/attendance_cubit.dart';
 import 'package:cristalteacher/features/authentication/data/datasources/auth_remote_data_source.dart';
 import 'package:cristalteacher/features/authentication/data/repositories/auth_repository_impl.dart';
@@ -21,11 +23,18 @@ import 'package:cristalteacher/features/diary/domain/usecases/delete_diary_useca
 import 'package:cristalteacher/features/diary/domain/usecases/fetch_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/save_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
+import 'package:cristalteacher/features/earlygoing/data/datasources/gatepass_remote_data_source.dart';
+import 'package:cristalteacher/features/earlygoing/data/repositories/gatepass_repository_impl.dart';
+import 'package:cristalteacher/features/earlygoing/domain/repositories/gatepass_repository.dart';
+import 'package:cristalteacher/features/earlygoing/domain/usecases/fetch_gatepass_usecase.dart';
+import 'package:cristalteacher/features/earlygoing/domain/usecases/update_gatepass_usecase.dart';
+import 'package:cristalteacher/features/earlygoing/presentation/cubit/gatepass_cubit.dart';
 import 'package:cristalteacher/features/exams/data/datasources/exam_remote_data_source.dart';
 import 'package:cristalteacher/features/exams/data/repositories/exam_repository_impl.dart';
 import 'package:cristalteacher/features/exams/domain/repositories/exam_repository.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/delete_exam_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_exam_usecase.dart';
+import 'package:cristalteacher/features/exams/domain/usecases/fetch_examentrydetialsforupdate_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/fetch_gradeplans_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/get_all_exams_usecase.dart';
 import 'package:cristalteacher/features/exams/domain/usecases/save_exammarks_usecase.dart';
@@ -44,6 +53,18 @@ import 'package:cristalteacher/features/materials/domain/repository/material_rep
 import 'package:cristalteacher/features/materials/domain/usecases/fetch_material_usecase.dart';
 import 'package:cristalteacher/features/materials/domain/usecases/save_material_usecase.dart';
 import 'package:cristalteacher/features/materials/presentation/cubit/material_cubit.dart';
+import 'package:cristalteacher/features/timetable/data/datasources/timetable_remote_datasource.dart';
+import 'package:cristalteacher/features/timetable/data/repositories/teacher_timetable_repository_impl.dart';
+import 'package:cristalteacher/features/timetable/domain/repositories/teacher_timetable_repository.dart';
+import 'package:cristalteacher/features/timetable/domain/usecases/fetch_teacher_timetable_usecase.dart';
+import 'package:cristalteacher/features/timetable/presentation/cubit/timetable_cubit.dart';
+import 'package:cristalteacher/features/workplan/data/datasources/workplan_remote_data_source.dart';
+import 'package:cristalteacher/features/workplan/data/repositories/workplan_repository_impl.dart';
+import 'package:cristalteacher/features/workplan/domain/repositories/workplan_repository.dart';
+import 'package:cristalteacher/features/workplan/domain/usecases/fetch_workplan_usecase.dart';
+import 'package:cristalteacher/features/workplan/domain/usecases/fetch_workplandetails_usecase.dart';
+import 'package:cristalteacher/features/workplan/domain/usecases/save_workplan_usecase.dart';
+import 'package:cristalteacher/features/workplan/presentation/cubit/workplan_cubit.dart';
 import 'package:get_it/get_it.dart';
 
 final sl = GetIt.instance;
@@ -103,12 +124,16 @@ Future<void> init() async {
       attendanceDetailsUseCase: sl(),
       saveAttendanceUseCase: sl(),
       fetchAttendanceReportUseCase: sl(),
+      fetchStudentAttendanceUseCase: sl(),
+      updateStudentAttendanceUseCase: sl(),
     ),
   );
 
   sl.registerLazySingleton(() => AttendanceDetailsUseCase(sl()));
   sl.registerLazySingleton(() => SaveAttendanceUseCase(sl()));
   sl.registerLazySingleton(() => FetchAttendanceReportUseCase(sl()));
+  sl.registerLazySingleton(() => FetchStudentAttendanceUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateStudentAttendanceUseCase(sl()));
 
   sl.registerLazySingleton<AttendanceRepository>(
     () => AttendanceRepositoryImpl(sl()),
@@ -166,6 +191,7 @@ Future<void> init() async {
       saveExamMarksUseCase: sl(),
       deleteExamMarkUseCase: sl(),
       updateMarkEntryUseCase: sl(),
+      fetchMarkEntryDetailsUseCase: sl(),
     ),
   );
 
@@ -176,6 +202,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SaveExamMarksUseCase(sl()));
   sl.registerLazySingleton(() => DeleteExamMarkUseCase(sl()));
   sl.registerLazySingleton(() => UpdateMarkEntryUseCase(sl()));
+  sl.registerLazySingleton(() => FetchMarkEntryDetailsUseCase(sl()));
 
   /// Repository
   sl.registerLazySingleton<ExamRepository>(() => ExamRepositoryImpl(sl()));
@@ -183,5 +210,59 @@ Future<void> init() async {
   /// Remote Data Source
   sl.registerLazySingleton<ExamRemoteDataSource>(
     () => ExamRemoteDataSourceImpl(),
+  );
+
+  /// ================= Timetable =================
+
+  sl.registerFactory(() => TimetableCubit(fetchTeacherTimetableUseCase: sl()));
+
+  sl.registerLazySingleton(() => FetchTeacherTimetableUseCase(sl()));
+
+  sl.registerLazySingleton<TeacherTimetableRepository>(
+    () => TeacherTimetableRepositoryImpl(sl()),
+  );
+
+  sl.registerLazySingleton<TeacherTimetableRemoteDataSource>(
+    () => TeacherTimetableRemoteDataSourceImpl(),
+  );
+
+  /// ================= Gate Pass =================
+
+  sl.registerFactory(
+    () =>
+        GatepassCubit(fetchGatePassUseCase: sl(), updateGatePassUseCase: sl()),
+  );
+
+  sl.registerLazySingleton(() => FetchGatePassUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateGatePassUseCase(sl()));
+
+  sl.registerLazySingleton<GatePassRepository>(
+    () => GatePassRepositoryImpl(sl()),
+  );
+
+  sl.registerLazySingleton<GatePassRemoteDataSource>(
+    () => GatePassRemoteDataSourceImpl(),
+  );
+
+  /// ================= Work Plan =================
+
+  sl.registerFactory(
+    () => WorkplanCubit(
+      fetchWorkPlanUseCase: sl(),
+      fetchWorkPlanDetailsUseCase: sl(),
+      saveWorkPlanUseCase: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton(() => FetchWorkPlanUseCase(sl()));
+  sl.registerLazySingleton(() => FetchWorkPlanDetailsUseCase(sl()));
+  sl.registerLazySingleton(() => SaveWorkPlanUseCase(sl()));
+
+  sl.registerLazySingleton<WorkPlanRepository>(
+    () => WorkPlanRepositoryImpl(sl()),
+  );
+
+  sl.registerLazySingleton<WorkPlanRemoteDataSource>(
+    () => WorkPlanRemoteDataSourceImpl(),
   );
 }

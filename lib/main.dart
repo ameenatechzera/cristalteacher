@@ -2,9 +2,12 @@ import 'package:cristalteacher/features/attendance/presentation/cubit/attendance
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:cristalteacher/features/authentication/presentation/screens/splash_screen.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
+import 'package:cristalteacher/features/earlygoing/presentation/cubit/gatepass_cubit.dart';
 import 'package:cristalteacher/features/exams/presentation/cubit/exam_cubit.dart';
 import 'package:cristalteacher/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:cristalteacher/features/materials/presentation/cubit/material_cubit.dart';
+import 'package:cristalteacher/features/timetable/presentation/cubit/timetable_cubit.dart';
+import 'package:cristalteacher/features/workplan/presentation/cubit/workplan_cubit.dart';
 import 'package:cristalteacher/services/service_locator.dart';
 import 'package:cristalteacher/services/service_locator.dart' as ServiceLocator;
 import 'package:flutter/material.dart';
@@ -32,6 +35,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<FeedCubit>(create: (_) => sl<FeedCubit>()),
         BlocProvider<MaterialCubit>(create: (_) => sl<MaterialCubit>()),
         BlocProvider<ExamCubit>(create: (_) => sl<ExamCubit>()),
+        BlocProvider<TimetableCubit>(create: (_) => sl<TimetableCubit>()),
+        BlocProvider<GatepassCubit>(create: (_) => sl<GatepassCubit>()),
+        BlocProvider<WorkplanCubit>(create: (_) => sl<WorkplanCubit>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

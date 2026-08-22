@@ -89,4 +89,40 @@ class ApiConstants {
   static String updateExamMarksPath(String baseUrl) {
     return '${baseUrl}exam-mark-entry/update/';
   }
+
+  static String getStudentAttendancePath(String baseUrl) {
+    return '${baseUrl}StudentAttendanceMaster-byid/';
+  }
+
+  static String getUpdateStudentAttendancePath(String baseUrl) {
+    return '${baseUrl}update-StudentAttendanceMaster/';
+  }
+
+  static String getMarkEntryDetailsPath(String baseUrl) {
+    return '${baseUrl}exam-mark-entry/show-by-id/';
+  }
+
+  static String getTeacherTimetablePath(String baseUrl) {
+    return '${baseUrl}teacher-timetable';
+  }
+
+  static String getGatePassPath(String baseUrl) {
+    return '${baseUrl}earlygoing-request-staff';
+  }
+
+  static String getUpdateGatePassPath(String baseUrl) {
+    return '${baseUrl}update-earlygoingrequest';
+  }
+
+  static String getWorkPlanPath(String baseUrl) {
+    return '${baseUrl}get-all-staffworkplan';
+  }
+
+  static String getWorkPlanDetailsPath(String baseUrl) {
+    return '${baseUrl}get-all-staffworkplandetails';
+  }
+
+  static String saveWorkPlanPath(String baseUrl) {
+    return '${baseUrl}save-staffworkplandetails';
+  }
 }
