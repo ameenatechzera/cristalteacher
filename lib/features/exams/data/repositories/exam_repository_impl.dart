@@ -76,9 +76,13 @@ class ExamRepositoryImpl implements ExamRepository {
   @override
   ResultFuture<MasterResponseModel> updateMarkEntry(
     UpdateMarkEntryParameter params,
+    int markEntryId,
   ) async {
     try {
-      final result = await _remoteDataSource.updateExamMarks(params);
+      final result = await _remoteDataSource.updateExamMarks(
+        params,
+        markEntryId,
+      );
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.toString()));

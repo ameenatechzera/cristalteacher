@@ -22,7 +22,10 @@ abstract class ExamRemoteDataSource {
   Future<GetAllExamResponseModel> getAllExams();
   Future saveExamMarks(SaveExamMarksParameter params);
   Future<MasterResponseModel> deleteExams(int id);
-  Future<MasterResponseModel> updateExamMarks(UpdateMarkEntryParameter params);
+  Future<MasterResponseModel> updateExamMarks(
+    UpdateMarkEntryParameter params,
+    int markEntryId,
+  );
   Future<MarkEntryDetailsModel> fetchMarkEntryDetails(int markEntryId);
 }
 
@@ -379,6 +382,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<MasterResponseModel> updateExamMarks(
     UpdateMarkEntryParameter params,
+    int markEntryId,
   ) async {
     print('✏️ Update Exam Marks Called');
     print('UpdateMarkEntryParameter: ${params.toJson()}');
@@ -390,9 +394,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
         throw Exception("Base URL not set");
       }
 
-      final url =
-          '${ApiConstants.updateExamMarksPath(baseUrl)}${params.markEntryId}';
-
+      final url = '${ApiConstants.updateExamMarksPath(baseUrl)}$markEntryId';
       print("✏️ Update Exam Marks URL: $url");
 
       final options = await ApiHelper.getAuthOptions(withToken: true);

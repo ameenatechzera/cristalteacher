@@ -51,7 +51,7 @@ class ApiConstants {
   }
 
   static String saveMaterialPath(String baseUrl) {
-    return '${baseUrl}save-material';
+    return '${baseUrl}app/save-material';
   }
 
   static String getMarkEntryPath(String baseUrl) {

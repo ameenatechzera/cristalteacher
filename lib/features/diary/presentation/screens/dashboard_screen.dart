@@ -177,7 +177,13 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     const SizedBox(height: 18),
                     Expanded(
                       child: GridView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.fromLTRB(
+                          16, // left
+                          0, // top
+                          16, // right
+                          40, // bottom space
+                        ),
+                        // padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: dashboardItems.length,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(

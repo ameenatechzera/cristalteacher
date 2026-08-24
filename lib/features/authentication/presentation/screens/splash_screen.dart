@@ -1,3 +1,5 @@
+import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/features/authentication/data/models/fetch_branch_model.dart';
 import 'package:cristalteacher/features/authentication/presentation/screens/login_screen.dart';
 import 'package:cristalteacher/features/authentication/presentation/screens/register_screen.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/dashboard_screen.dart';
@@ -25,30 +27,42 @@ class _AppStartScreenState extends State<AppStartScreen> {
     final String? token = await pref.getToken();
 
     final bool isLoggedIn = token != null && token.trim().isNotEmpty;
+    // Restore saved branch before opening another screen.
+    final Map<String, dynamic>? savedBranch = await pref.getBranchData();
 
-    debugPrint('==============================');
-    debugPrint('APP START');
-    debugPrint('School Registered : $isRegistered');
-    debugPrint('Logged In         : $isLoggedIn');
-    debugPrint('==============================');
+    if (savedBranch != null) {
+      final BranchDataModel branch = BranchDataModel.fromJson(savedBranch);
 
-    await Future.delayed(const Duration(seconds: 1));
+      AppData.branchId = branch.branchId;
+      AppData.branchName = branch.branchName;
 
-    if (!mounted) {
-      return;
+      debugPrint('==============================');
+      debugPrint('APP START');
+      debugPrint('School Registered : $isRegistered');
+      debugPrint('Logged In         : $isLoggedIn');
+      debugPrint('==============================');
+      debugPrint('Branch ID          : ${AppData.branchId}');
+      debugPrint('Branch Name        : ${AppData.branchName}');
+      debugPrint('==============================');
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (!mounted) {
+        return;
+      }
+
+      if (!isRegistered) {
+        _openPage(const RegisterCodePage());
+        return;
+      }
+
+      if (!isLoggedIn) {
+        _openPage(const LoginScreen());
+        return;
+      }
+
+      _openPage(TeacherDashboardPage());
     }
-
-    if (!isRegistered) {
-      _openPage(const RegisterCodePage());
-      return;
-    }
-
-    if (!isLoggedIn) {
-      _openPage(const LoginScreen());
-      return;
-    }
-
-    _openPage(TeacherDashboardPage());
   }
 
   void _openPage(Widget page) {
@@ -61,11 +75,11 @@ class _AppStartScreenState extends State<AppStartScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: Image(
-            image: AssetImage('assets/images/Rectangle 95.png'),
+            image: AssetImage('assets/icons/cristal.jpeg'),
             height: 180,
           ),
         ),

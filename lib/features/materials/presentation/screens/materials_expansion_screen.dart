@@ -1,4 +1,5 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/core/utils/date_utils_helper.dart';
 import 'package:cristalteacher/features/materials/domain/entities/fetch_material_entity.dart';
 import 'package:cristalteacher/features/materials/domain/parameter/fetch_material_parameter.dart';
 import 'package:cristalteacher/features/materials/presentation/cubit/material_cubit.dart';
@@ -26,14 +27,14 @@ class _MaterialsExpansionScreen extends State<MaterialsExpansionScreen> {
   @override
   void initState() {
     super.initState();
-
+    final String currentDate = DateUtilsHelper.getCurrentDate();
     context.read<MaterialCubit>().fetchMaterials(
       FetchMaterialParameter(
         subjectId: widget.subjectId!,
         accYear: AppData.accYear!,
         branchId: 1,
-        fromDate: "2026-07-01",
-        toDate: "2026-08-21",
+        fromDate: currentDate,
+        toDate: currentDate,
         staffId: null,
       ),
     );

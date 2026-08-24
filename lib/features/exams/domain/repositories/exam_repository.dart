@@ -21,6 +21,7 @@ abstract class ExamRepository {
   ResultFuture<MasterResponseModel> deleteExamMark(int id);
   ResultFuture<MasterResponseModel> updateMarkEntry(
     UpdateMarkEntryParameter params,
+    int merkEntryId,
   );
   ResultFuture<MarkEntryDetailsEntity> fetchMarkEntryDetails(int markEntryId);
 }

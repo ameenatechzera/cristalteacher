@@ -933,9 +933,9 @@ class _GatePassScreenState extends State<GatePassScreen> {
           accYear: AppData.accYear!,
           branchId: 1,
           employeeId: null,
-          fromDate: "2026-08-20",
+          fromDate: date,
           status: 'pending',
-          toDate: "2026-08-20",
+          toDate: date,
         ),
       );
     });

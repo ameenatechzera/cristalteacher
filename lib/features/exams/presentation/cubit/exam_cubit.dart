@@ -194,14 +194,17 @@ class ExamCubit extends Cubit<ExamState> {
   // UPDATE EXAM MARKS
   // ============================================================
 
-  Future<void> updateMarkEntry(UpdateMarkEntryParameter request) async {
+  Future<void> updateMarkEntry(
+    UpdateMarkEntryParameter request,
+    int markEntryId,
+  ) async {
     print('✏️ Update Mark Entry Request');
     print('UpdateMarkEntryParameter: ${request.toJson()}');
 
     emit(UpdateMarkEntryLoading());
 
     try {
-      final result = await _updateMarkEntryUseCase(request);
+      final result = await _updateMarkEntryUseCase(request, markEntryId);
 
       result.fold(
         (failure) {

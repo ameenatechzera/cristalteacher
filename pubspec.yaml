@@ -107,6 +107,7 @@ flutter:
     - assets/icons/Group (19).svg
     - assets/icons/cristal_icon.png
     - assets/images/cristal_white.png
+    - assets/icons/cristal.jpeg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

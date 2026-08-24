@@ -57,12 +57,35 @@ class _ExamScreenState extends State<ExamScreen> {
     context.read<AuthenticationCubit>().fetchTutorshipClass(request);
   }
 
+  String? _formatApiDate(DateTime? date) {
+    if (date == null) return null;
+
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _fetchExams() async {
+    final String? selectedFromDate = _formatApiDate(fromDate);
+    final String? selectedToDate = _formatApiDate(toDate);
+
     final request = FetchMarkEntryParameter(
-      accYear: AppData.accYear!,
+      accYear: AppData.accYear ?? '',
       branchId: AppData.branchId ?? 1,
       standardId: selectedStandardId,
+      fromDate: selectedFromDate,
+      toDate: selectedToDate,
     );
+
+    debugPrint('==========================================');
+    debugPrint('📘 FETCH MARK ENTRY');
+    debugPrint('AccYear: ${AppData.accYear}');
+    debugPrint('BranchId: ${AppData.branchId ?? 1}');
+    debugPrint('StandardId: $selectedStandardId');
+    debugPrint('FromDate: $selectedFromDate');
+    debugPrint('ToDate: $selectedToDate');
+    debugPrint('Request: ${request.toJson()}');
+    debugPrint('==========================================');
 
     await context.read<ExamCubit>().fetchMarkEntry(request);
   }
@@ -130,11 +153,11 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   Future<void> _selectDate({required bool isFromDate}) async {
-    final initialDate = isFromDate
+    final DateTime initialDate = isFromDate
         ? fromDate ?? DateTime.now()
         : toDate ?? fromDate ?? DateTime.now();
 
-    final selectedDate = await showDatePicker(
+    final DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2020),
@@ -156,25 +179,29 @@ class _ExamScreenState extends State<ExamScreen> {
 
     if (selectedDate == null || !mounted) return;
 
+    final DateTime selectedDateOnly = _dateOnly(selectedDate);
+
     if (isFromDate) {
       setState(() {
-        fromDate = selectedDate;
+        fromDate = selectedDateOnly;
 
-        if (toDate != null && selectedDate.isAfter(toDate!)) {
+        if (toDate != null && selectedDateOnly.isAfter(toDate!)) {
           toDate = null;
         }
       });
     } else {
-      if (fromDate != null && selectedDate.isBefore(fromDate!)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('To date cannot be before from date')),
-        );
+      if (fromDate != null && selectedDateOnly.isBefore(fromDate!)) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('To date cannot be before from date')),
+          );
 
         return;
       }
 
       setState(() {
-        toDate = selectedDate;
+        toDate = selectedDateOnly;
       });
     }
 
@@ -197,10 +224,16 @@ class _ExamScreenState extends State<ExamScreen> {
     await _fetchExams();
   }
 
-  void _editExam(MarkEntryEntity exam) {
-    Navigator.of(
+  Future<void> _editExam(MarkEntryEntity exam) async {
+    final result = await Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => SelectExamScreen(exam: exam)));
+
+    if (!mounted) return;
+
+    if (result == true) {
+      await _fetchExams();
+    }
   }
 
   void _deleteExam(MarkEntryEntity exam) {
@@ -227,9 +260,8 @@ class _ExamScreenState extends State<ExamScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                // Call delete API
+
                 context.read<ExamCubit>().deleteExamMark(exam.markEntryId);
-                // Call the delete exam Cubit here.
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
             ),
@@ -292,24 +324,31 @@ class _ExamScreenState extends State<ExamScreen> {
                 }
 
                 if (state is ExamFailure && exams.isNotEmpty) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBar(content: Text(state.message)));
                 }
+
                 if (state is DeleteExamMarkSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Exam deleted successfully')),
-                  );
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(
+                        content: Text('Exam deleted successfully'),
+                      ),
+                    );
 
                   await _fetchExams();
                 }
 
                 if (state is DeleteExamMarkFailure) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBar(content: Text(state.message)));
                 }
-                if (state is SaveExamMarksSuccess) {
+
+                if (state is SaveExamMarksSuccess ||
+                    state is UpdateMarkEntrySuccess) {
                   await _fetchExams();
                 }
               },
@@ -446,7 +485,7 @@ class _ExamScreenState extends State<ExamScreen> {
               );
             }),
           ],
-          onChanged: (value) {
+          onChanged: (value) async {
             TutorshipClass? selectedItem;
 
             for (final item in standardList) {
@@ -466,7 +505,7 @@ class _ExamScreenState extends State<ExamScreen> {
               }
             });
 
-            _fetchExams();
+            await _fetchExams();
           },
         );
       },
@@ -683,9 +722,12 @@ class _ExamScreenState extends State<ExamScreen> {
               ),
             ),
             if (date != null)
-              GestureDetector(
-                onTap: onClear,
-                child: const Icon(Icons.close, size: 15, color: Colors.grey),
+              IconButton(
+                constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                padding: EdgeInsets.zero,
+                splashRadius: 16,
+                onPressed: onClear,
+                icon: const Icon(Icons.close, size: 15, color: Colors.grey),
               ),
           ],
         ),
