@@ -761,6 +761,7 @@ import 'package:cristalteacher/features/workplan/presentation/cubit/workplan_cub
 import 'package:cristalteacher/features/workplan/presentation/screens/workplan_creating_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 class WorkplanDetialsScreen extends StatefulWidget {
   const WorkplanDetialsScreen({super.key});
@@ -1169,14 +1170,25 @@ class _WorkplanDetialsScreenState extends State<WorkplanDetialsScreen> {
                                   color: primaryColor,
                                   size: 25,
                                 ),
-                          hint: Text(
-                            isFetchingWorkPlans
-                                ? 'Loading work plans...'
-                                : 'Select Work Plan',
-                            style: const TextStyle(
-                              color: Color(0xFF77717D),
-                              fontSize: 13,
-                            ),
+                          hint: Row(
+                            children: [
+                              SvgPicture.asset(
+                                'assets/icons/Group (23).svg',
+                                width: 14,
+                                height: 14,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isFetchingWorkPlans
+                                    ? 'Loading work plans...'
+                                    : 'Select Work Plan',
+                                style: const TextStyle(
+                                  color: Color(0xFF77717D),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
                           decoration: InputDecoration(
                             filled: true,
@@ -1269,9 +1281,20 @@ class _WorkplanDetialsScreenState extends State<WorkplanDetialsScreen> {
                                         Icons.keyboard_arrow_down_rounded,
                                         color: primaryColor,
                                       ),
-                                hint: const Text(
-                                  'Standard',
-                                  style: TextStyle(fontSize: 12),
+                                hint: Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/Clip path group (1).svg',
+                                      width: 14,
+                                      height: 14,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Standard',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
                                 ),
                                 decoration: InputDecoration(
                                   filled: true,
@@ -1334,9 +1357,20 @@ class _WorkplanDetialsScreenState extends State<WorkplanDetialsScreen> {
                                   Icons.keyboard_arrow_down_rounded,
                                   color: primaryColor,
                                 ),
-                                hint: const Text(
-                                  'Division',
-                                  style: TextStyle(fontSize: 12),
+                                hint: Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/Clip path group (1).svg',
+                                      width: 14,
+                                      height: 14,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Division',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
                                 ),
                                 decoration: InputDecoration(
                                   filled: true,
@@ -1462,10 +1496,16 @@ class _WorkplanDetialsScreenState extends State<WorkplanDetialsScreen> {
                                           shape: BoxShape.circle,
                                         ),
                                         alignment: Alignment.center,
-                                        child: const Icon(
-                                          Icons.chair_alt_rounded,
-                                          color: blueColor,
-                                          size: 30,
+
+                                        // child: const Icon(
+                                        //   Icons.chair_alt_rounded,
+                                        //   color: blueColor,
+                                        //   size: 30,
+                                        // ),
+                                        child: SvgPicture.asset(
+                                          'assets/icons/Group 1165.svg',
+                                          width: 30,
+                                          height: 30,
                                         ),
                                       ),
                                       const SizedBox(width: 15),

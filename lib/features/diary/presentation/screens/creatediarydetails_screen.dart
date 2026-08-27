@@ -1039,6 +1039,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/diary/domain/parameters/save_diary_parameter.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
+import 'package:cristalteacher/features/diary/presentation/screens/diary_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1900,9 +1901,17 @@ class _SelectYourClassScreenState extends State<SelectYourClassScreen> {
 
           await _deleteRecording();
 
-          if (mounted) {
-            Navigator.pop(context, true);
-          }
+          // if (mounted) {
+          //   Navigator.pop(context, true);
+          // }
+          if (!context.mounted) return;
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const DiaryTypeScreen()),
+
+            // Keeps the dashboard and removes the diary creation screens.
+            (route) => route.isFirst,
+          );
         } else if (state is DiaryFailure) {
           _showMessage(state.message);
         }

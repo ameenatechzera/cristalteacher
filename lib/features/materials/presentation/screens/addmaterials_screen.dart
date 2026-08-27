@@ -2985,13 +2985,22 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
         ),
         BlocListener<MaterialCubit, MaterialState>(
           listener: (context, state) {
-            if (state is SaveMaterialSuccess) {
-              _showMessage(
-                'Material saved successfully',
-                backgroundColor: Colors.green,
-              );
+            // if (state is SaveMaterialSuccess) {
+            //   // _showMessage(
+            //   //   'Material saved successfully',
+            //   //   backgroundColor: Colors.green,
+            //   // );
 
-              _clearForm();
+            //   // _clearForm();
+            //   if (!mounted) return;
+
+            //   Navigator.of(context).pop(true);
+            // }
+            if (state is SaveMaterialSuccess) {
+              Navigator.pop(context, true);
+            }
+            if (state is SaveMaterialFailure) {
+              _showMessage(state.message);
 
               // Use this if the screen should close after success:
               // Navigator.pop(context, true);

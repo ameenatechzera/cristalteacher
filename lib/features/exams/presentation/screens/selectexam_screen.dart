@@ -1410,7 +1410,99 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
     });
   }
 
-  void goToExamDetails() {
+  // void goToExamDetails() {
+  //   final maxTe = int.tryParse(maxTeController.text.trim());
+  //   final maxCe = int.tryParse(maxCeController.text.trim());
+
+  //   if (selectedExamId == null ||
+  //       selectedExam == null ||
+  //       selectedExamTermId == null ||
+  //       selectedExamTypeId == null ||
+  //       selectedGradePlanId == null ||
+  //       selectedGrade == null ||
+  //       selectedDate == null ||
+  //       selectedStandardId == null ||
+  //       selectedStandard == null ||
+  //       selectedDivisionId == null ||
+  //       selectedDivision == null ||
+  //       selectedSubjectId == null ||
+  //       selectedSubject == null ||
+  //       maxTe == null ||
+  //       maxCe == null) {
+  //     showError('Please fill all the fields');
+  //     return;
+  //   }
+
+  //   if (maxTe <= 0 || maxCe <= 0) {
+  //     showError('Maximum marks must be greater than zero');
+  //     return;
+  //   }
+
+  //   if (isEditMode && markEntryId == null) {
+  //     showError('Mark entry ID is unavailable');
+  //     return;
+  //   }
+
+  //   if (AppData.accYear == null) {
+  //     showError('Academic year is unavailable');
+  //     return;
+  //   }
+
+  //   final request = AttendanceDetailsRequest(
+  //     accyear: AppData.accYear!,
+  //     standard: selectedStandardId!,
+  //     division: selectedDivisionId!,
+  //     sortBy: 'alphabetic',
+  //   );
+
+  //   debugPrint('==========================================');
+  //   debugPrint(isEditMode ? 'EDIT EXAM DETAILS' : 'ADD EXAM DETAILS');
+  //   debugPrint('Mark Entry ID: $markEntryId');
+  //   debugPrint('Exam ID: $selectedExamId');
+  //   debugPrint('Exam Name: $selectedExam');
+  //   debugPrint('Exam Term ID: $selectedExamTermId');
+  //   debugPrint('Exam Type ID: $selectedExamTypeId');
+  //   debugPrint('Grade Plan ID: $selectedGradePlanId');
+  //   debugPrint('Grade Plan: $selectedGrade');
+  //   debugPrint('Date: ${formatDate(selectedDate!)}');
+  //   debugPrint('Standard ID: $selectedStandardId');
+  //   debugPrint('Standard: $selectedStandard');
+  //   debugPrint('Division ID: $selectedDivisionId');
+  //   debugPrint('Division: $selectedDivision');
+  //   debugPrint('Subject ID: $selectedSubjectId');
+  //   debugPrint('Subject: $selectedSubject');
+  //   debugPrint('Max TE: $maxTe');
+  //   debugPrint('Max CE: $maxCe');
+  //   debugPrint('Attendance request: ${request.toJson()}');
+  //   debugPrint('==========================================');
+
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (_) => ExamDetailsScreen(
+  //         request: request,
+  //         examId: selectedExamId!,
+  //         examName: selectedExam!,
+  //         examTermId: selectedExamTermId!,
+  //         examTypeId: selectedExamTypeId!,
+  //         gradePlanId: selectedGradePlanId!,
+  //         gradePlanName: selectedGrade!,
+  //         gradeSettings: selectedGradePlan?.settings ?? const [],
+  //         examDate: selectedDate!,
+  //         standardId: selectedStandardId!,
+  //         standardName: selectedStandard!,
+  //         divisionId: selectedDivisionId!,
+  //         divisionName: selectedDivision!,
+  //         subjectId: selectedSubjectId!,
+  //         subjectName: selectedSubject!,
+  //         maxTe: maxTe,
+  //         maxCe: maxCe,
+  //         isEditMode: isEditMode,
+  //         markEntryId: markEntryId,
+  //       ),
+  //     ),
+  //   );
+  // }
+  Future<void> goToExamDetails() async {
     final maxTe = int.tryParse(maxTeController.text.trim());
     final maxCe = int.tryParse(maxCeController.text.trim());
 
@@ -1476,7 +1568,7 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
     debugPrint('Attendance request: ${request.toJson()}');
     debugPrint('==========================================');
 
-    Navigator.of(context).push(
+    final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => ExamDetailsScreen(
           request: request,
@@ -1501,6 +1593,10 @@ class _SelectExamScreenState extends State<SelectExamScreen> {
         ),
       ),
     );
+
+    if (result == true && mounted) {
+      Navigator.pop(context, true);
+    }
   }
 
   void showError(String message) {

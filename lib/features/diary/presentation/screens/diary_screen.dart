@@ -371,6 +371,55 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
   }
 }
 
+// class _DiaryHeader extends StatelessWidget {
+//   final VoidCallback onFilterTap;
+
+//   const _DiaryHeader({required this.onFilterTap});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       height: 62,
+//       padding: const EdgeInsets.symmetric(horizontal: 22),
+//       color: const Color(0xffF7F7F7),
+//       child: Row(
+//         children: [
+//           GestureDetector(
+//             onTap: onFilterTap,
+//             child: Container(
+//               width: 36,
+//               height: 36,
+//               decoration: const BoxDecoration(
+//                 color: Color(0xff9D75E8),
+//                 shape: BoxShape.circle,
+//               ),
+//               child: const Icon(
+//                 Icons.filter_list_rounded,
+//                 color: Colors.white,
+//                 size: 22,
+//               ),
+//             ),
+//           ),
+
+//           const Expanded(
+//             child: Center(
+//               child: Text(
+//                 'Diary Type',
+//                 style: TextStyle(
+//                   fontSize: 16,
+//                   fontWeight: FontWeight.w700,
+//                   color: Color(0xff222222),
+//                 ),
+//               ),
+//             ),
+//           ),
+
+//           const SizedBox(width: 36),
+//         ],
+//       ),
+//     );
+//   }
+// }
 class _DiaryHeader extends StatelessWidget {
   final VoidCallback onFilterTap;
 
@@ -382,39 +431,63 @@ class _DiaryHeader extends StatelessWidget {
       height: 62,
       padding: const EdgeInsets.symmetric(horizontal: 22),
       color: const Color(0xffF7F7F7),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          GestureDetector(
-            onTap: onFilterTap,
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                color: Color(0xff9D75E8),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.filter_list_rounded,
-                color: Colors.white,
-                size: 22,
+          const Center(
+            child: Text(
+              'Diary Type',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff222222),
               ),
             ),
           ),
 
-          const Expanded(
-            child: Center(
-              child: Text(
-                'Diary Type',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xff222222),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Back button first
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                      size: 23,
+                    ),
+                  ),
                 ),
-              ),
+
+                const SizedBox(width: 8),
+
+                // Existing filter button second
+                GestureDetector(
+                  onTap: onFilterTap,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(
+                      color: Color(0xff9D75E8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.filter_list_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(width: 36),
         ],
       ),
     );
@@ -1941,18 +2014,23 @@ class _DrawerIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: const BoxDecoration(
-        color: Color(0xff9D75E8),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: SvgPicture.asset(
-          "assets/icons/Vector.svg",
-          width: 20,
-          height: 20,
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pop();
+      },
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: const BoxDecoration(
+          color: Color(0xff9D75E8),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: SvgPicture.asset(
+            "assets/icons/Vector.svg",
+            width: 20,
+            height: 20,
+          ),
         ),
       ),
     );
