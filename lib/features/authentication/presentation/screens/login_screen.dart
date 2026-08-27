@@ -1,6 +1,7 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/login_parameter.dart';
 import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:cristalteacher/features/authentication/presentation/screens/teacherDashboard_screen.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/dashboard_screen.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           AppData.employeeId = user?.employeeId;
           AppData.userId = user?.id;
+          AppData.teacherName = user!.name;
 
           debugPrint('===================================');
           debugPrint('APP DATA SAVED');
@@ -72,10 +74,15 @@ class _LoginScreenState extends State<LoginScreen> {
           // context.read<AuthenticationCubit>().fetchAccYear();
 
           // return;
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => TeacherDashboardPage()),
+          // );
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => TeacherDashboardPage()),
+            MaterialPageRoute(builder: (_) => TeacherDashboardNewPage()),
           );
+
         }
 
         // /// ACADEMIC YEAR SUCCESS

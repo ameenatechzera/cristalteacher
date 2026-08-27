@@ -111,6 +111,7 @@ flutter:
     - assets/icons/Group 1165.svg
     - assets/icons/Group (23).svg
     - assets/icons/Clip path group (1).svg
+    - assets/images/defaultstudent.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,5 +1,6 @@
 import 'package:cristalteacher/features/authentication/presentation/screens/login_screen.dart';
 import 'package:cristalteacher/features/authentication/presentation/screens/register_screen.dart';
+import 'package:cristalteacher/features/authentication/presentation/screens/teacherDashboard_screen.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/dashboard_screen.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,8 @@ class _AppStartScreenState extends State<AppStartScreen> {
       return;
     }
 
-    _openPage(TeacherDashboardPage());
+    // _openPage(TeacherDashboardPage());
+    _openPage(TeacherDashboardNewPage());
   }
 
   void _openPage(Widget page) {

@@ -23,4 +23,6 @@ class AppData {
   static bool feeCollectionStatus = false;
   static int? employeeId;
   static int? userId;
+  static String? teacherName;
+
 }

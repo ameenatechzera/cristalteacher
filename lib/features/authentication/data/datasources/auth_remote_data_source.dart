@@ -5,13 +5,16 @@ import 'package:cristalteacher/core/errors/exceptions.dart';
 import 'package:cristalteacher/core/network/api_endpoints.dart';
 import 'package:cristalteacher/core/network/api_helper.dart';
 import 'package:cristalteacher/features/authentication/data/models/class_details_model.dart';
+import 'package:cristalteacher/features/authentication/data/models/dashboardResultModel.dart';
 import 'package:cristalteacher/features/authentication/data/models/fetch_accyear_model.dart';
 import 'package:cristalteacher/features/authentication/data/models/fetch_branch_model.dart';
 import 'package:cristalteacher/features/authentication/data/models/fetch_school_model.dart';
 import 'package:cristalteacher/features/authentication/data/models/login_model.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_branch_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_school_entity.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_school_parameter.dart';
+import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/login_parameter.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
@@ -25,6 +28,8 @@ abstract class AuthRemoteDataSource {
     FetchTutorshipClassRequest request,
   );
   Future<FetchAccYearModel> fetchAccYear();
+  Future<TeacherDashboardResult> fetchTeacherDashboard(TeacherDashboardRequest request);
+
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -267,6 +272,51 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
     } catch (e, stacktrace) {
       print('❌ Exception in fetchAccYear: $e');
+      print(stacktrace);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TeacherDashboardResult> fetchTeacherDashboard(TeacherDashboardRequest request) async {
+    try {
+      /// Base URL
+      final baseUrl = await SharedPreferenceHelper().getBaseUrl();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("Base URL not set");
+      }
+
+      print('📘 Base Url => $baseUrl');
+
+      /// API URL
+      final url = ApiConstants.getTeacherDashboardPath(baseUrl);
+
+      print('📘 URL => $url');
+
+      /// Authorization Header
+      final options = await ApiHelper.getAuthOptions(withToken: true);
+      print("Headers: ${options.headers}");
+
+      /// API Call
+      final response = await dio.post(
+        url,
+        data: request.toJson(),
+        options: options,
+      );
+
+      print('📘 Status Code: ${response.statusCode}');
+      print('📘 Response Data: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return DashboardResultModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(response.data),
+        );
+      }
+    } catch (e, stacktrace) {
+      print('❌ Exception in Fetch Tutorship Class: $e');
       print(stacktrace);
       rethrow;
     }

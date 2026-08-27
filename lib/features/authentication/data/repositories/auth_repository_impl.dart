@@ -7,7 +7,9 @@ import 'package:cristalteacher/features/authentication/domain/entities/fetch_acc
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_branch_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_school_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/login_entity.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_school_parameter.dart';
+import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/login_parameter.dart';
 import 'package:cristalteacher/features/authentication/domain/repositories/auth_repository.dart';
@@ -74,6 +76,18 @@ class AuthRepositoryImpl implements AuthRepository {
   ResultFuture<FetchAccYearEntity> fetchAccYear() async {
     try {
       final result = await _remoteDataSource.fetchAccYear();
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.errorMessageModel.statusMessage));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<TeacherDashboardResult> fetchDashboardDetails(TeacherDashboardRequest request) async {
+    try {
+      final result = await _remoteDataSource.fetchTeacherDashboard(request);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.errorMessageModel.statusMessage));
