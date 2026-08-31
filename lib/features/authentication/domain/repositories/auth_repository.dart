@@ -4,7 +4,9 @@ import 'package:cristalteacher/features/authentication/domain/entities/fetch_acc
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_branch_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_school_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/login_entity.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_school_parameter.dart';
+import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/login_parameter.dart';
 
@@ -16,4 +18,5 @@ abstract class AuthRepository {
     FetchTutorshipClassRequest request,
   );
   ResultFuture<FetchAccYearEntity> fetchAccYear();
+  ResultFuture<TeacherDashboardResult> fetchDashboardDetails(TeacherDashboardRequest request);
 }

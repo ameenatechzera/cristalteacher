@@ -24,6 +24,7 @@ class AuthenticationFailure extends AuthenticationState {
 }
 
 class FetchSchoolLoading extends AuthenticationState {}
+class FetchDashboardLoading extends AuthenticationState {}
 
 class FetchSchoolSuccess extends AuthenticationState {
   final FetchSchoolEntity response;
@@ -31,10 +32,21 @@ class FetchSchoolSuccess extends AuthenticationState {
   const FetchSchoolSuccess(this.response);
 }
 
+class FetchDashboardSuccess extends AuthenticationState {
+  final TeacherDashboardResult response;
+
+  const FetchDashboardSuccess(this.response);
+}
 class FetchSchoolFailure extends AuthenticationState {
   final String message;
 
   const FetchSchoolFailure(this.message);
+}
+
+class FetchDashboardFailure extends AuthenticationState {
+  final String message;
+
+  const FetchDashboardFailure(this.message);
 }
 
 class GetBranchLoading extends AuthenticationState {}

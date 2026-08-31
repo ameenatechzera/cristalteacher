@@ -12,6 +12,7 @@ import 'package:cristalteacher/features/authentication/data/repositories/auth_re
 import 'package:cristalteacher/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_accyear_usecase.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_branch_usecase.dart';
+import 'package:cristalteacher/features/authentication/domain/usecases/fetch_dashboard_usecase.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_school_usecase.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_tutorshipclass_usecase.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/login_usecase.dart';
@@ -77,7 +78,7 @@ Future<void> init() async {
       fetchSchoolUseCase: sl(),
       getBranchUseCase: sl(),
       fetchTutorshipClassUseCase: sl(),
-      fetchAccYearUseCase: sl(),
+      fetchAccYearUseCase: sl(), fetchDashboardUseCase: sl(),
     ),
   );
 
@@ -90,6 +91,8 @@ Future<void> init() async {
     () => FetchTutorshipClassUseCase(sl()),
   );
   sl.registerLazySingleton(() => FetchAccYearUseCase(sl()));
+  sl.registerLazySingleton(() => FetchDashboardUseCase(sl()));
+
 
   /// Repository
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));

@@ -3,9 +3,12 @@ import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_accyear_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/fetch_branch_entity.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
+import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_accyear_usecase.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_branch_usecase.dart';
+import 'package:cristalteacher/features/authentication/domain/usecases/fetch_dashboard_usecase.dart';
 import 'package:cristalteacher/features/authentication/domain/usecases/fetch_tutorshipclass_usecase.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:equatable/equatable.dart';
@@ -23,6 +26,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final GetBranchUseCase _getBranchUseCase;
   final FetchTutorshipClassUseCase _fetchTutorshipClassUseCase;
   final FetchAccYearUseCase _fetchAccYearUseCase;
+  final FetchDashboardUseCase _fetchDashboardUseCase;
 
   AuthenticationCubit({
     required LoginUseCase loginUseCase,
@@ -30,11 +34,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required GetBranchUseCase getBranchUseCase,
     required FetchTutorshipClassUseCase fetchTutorshipClassUseCase,
     required FetchAccYearUseCase fetchAccYearUseCase,
+    required FetchDashboardUseCase fetchDashboardUseCase
   }) : _loginUseCase = loginUseCase,
        _fetchSchoolUseCase = fetchSchoolUseCase,
        _getBranchUseCase = getBranchUseCase,
        _fetchTutorshipClassUseCase = fetchTutorshipClassUseCase,
        _fetchAccYearUseCase = fetchAccYearUseCase,
+  _fetchDashboardUseCase = fetchDashboardUseCase,
        super(AuthenticationInitial());
 
   Future<void> login(LoginRequest request) async {
@@ -190,6 +196,39 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       print(stackTrace);
 
       emit(const FetchAccYearFailure('An unexpected error occurred'));
+    }
+  }
+
+  Future<void> fetchTeacherDashboard(TeacherDashboardRequest request) async {
+    print('📘 Fetch Dashboard Request: ${request.toJson()}');
+
+    emit(FetchDashboardLoading());
+
+    try {
+      final result = await _fetchDashboardUseCase(request);
+
+      result.fold(
+            (failure) {
+          print('❌ Fetch School Failed');
+          print(failure.message);
+
+          emit(FetchDashboardFailure(failure.message));
+        },
+            (response) async {
+          if (response.status == 200 || response.status == 201) {
+
+            emit(FetchDashboardSuccess(response));
+          } else {
+            emit(FetchDashboardSuccess(response));
+          }
+        },
+      );
+    } catch (e, stackTrace) {
+      print('❌ Exception during fetchSchools');
+      print(e);
+      print(stackTrace);
+
+      emit(const FetchDashboardFailure('An unexpected error occurred'));
     }
   }
 }
