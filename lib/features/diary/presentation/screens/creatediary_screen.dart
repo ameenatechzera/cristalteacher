@@ -686,6 +686,11 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
   @override
   void initState() {
     super.initState();
+    final DateTime today = DateTime.now();
+
+    diaryDate = DateTime(today.year, today.month, today.day);
+
+    dueDate = diaryDate!.add(const Duration(days: 1));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -1141,42 +1146,53 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
 
           const SizedBox(height: 28),
 
-          Container(
-            height: 58,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xffEEF3FC),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xff8B8B8B), width: 0.8),
-            ),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: isFavourite,
-                  activeColor: const Color(0xff9D75E8),
-                  checkColor: Colors.white,
-                  side: const BorderSide(color: Color(0xff5F6368), width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3),
+          InkWell(
+            onTap: () {
+              setState(() {
+                isFavourite = !isFavourite;
+              });
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              height: 58,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xffEEF3FC),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xff8B8B8B), width: 0.8),
+              ),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: isFavourite,
+                    activeColor: const Color(0xff9D75E8),
+                    checkColor: Colors.white,
+                    side: const BorderSide(
+                      color: Color(0xff5F6368),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        isFavourite = value ?? false;
+                      });
+                    },
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      isFavourite = value ?? false;
-                    });
-                  },
-                ),
-                const SizedBox(width: 2),
-                const Expanded(
-                  child: Text(
-                    'Is Favourite',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                  const SizedBox(width: 2),
+                  const Expanded(
+                    child: Text(
+                      'Is Favourite',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 

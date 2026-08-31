@@ -1123,6 +1123,8 @@ class _SelectYourClassScreenState extends State<SelectYourClassScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
+  double _descriptionFontSize = 12;
+  Color _descriptionFontColor = Colors.black;
   final AudioRecorder _audioRecorder = AudioRecorder();
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -1221,6 +1223,156 @@ class _SelectYourClassScreenState extends State<SelectYourClassScreen> {
     _audioPlayer.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _showFontOptions() async {
+    double temporarySize = _descriptionFontSize;
+    Color temporaryColor = _descriptionFontColor;
+
+    const availableColors = <Color>[
+      Colors.black,
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.brown,
+      Colors.grey,
+    ];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, updateSheet) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        'Text Style',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Text(
+                          'Font Size',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${temporarySize.round()} px',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: temporarySize,
+                      min: 10,
+                      max: 30,
+                      divisions: 20,
+                      activeColor: primaryColor,
+                      onChanged: (value) {
+                        updateSheet(() {
+                          temporarySize = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Font Color',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 14,
+                      runSpacing: 14,
+                      children: availableColors.map((color) {
+                        final selected = temporaryColor == color;
+
+                        return GestureDetector(
+                          onTap: () {
+                            updateSheet(() {
+                              temporaryColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: selected
+                                    ? primaryColor
+                                    : Colors.transparent,
+                                width: 3,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: selected
+                                ? const Icon(
+                                    Icons.check,
+                                    size: 18,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 26),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _descriptionFontSize = temporarySize;
+                            _descriptionFontColor = temporaryColor;
+                          });
+
+                          Navigator.pop(bottomSheetContext);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                        ),
+                        child: const Text('Apply'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   String formatApiDate(DateTime date) {

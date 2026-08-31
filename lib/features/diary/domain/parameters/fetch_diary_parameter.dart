@@ -63,8 +63,8 @@
 // }
 class FetchDiaryParameter {
   final int branchId;
-  final int standardId;
-  final int divisionId;
+  final int? standardId;
+  final int? divisionId;
   final String accyear;
   final String fromDate;
   final String toDate;
@@ -72,8 +72,8 @@ class FetchDiaryParameter {
 
   const FetchDiaryParameter({
     required this.branchId,
-    required this.standardId,
-    required this.divisionId,
+    this.standardId,
+    this.divisionId,
     required this.accyear,
     required this.fromDate,
     required this.toDate,
