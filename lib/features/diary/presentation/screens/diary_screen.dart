@@ -2741,10 +2741,12 @@ class _ApiDiaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = _CardColors.fromDiaryId(diary.diaryId);
     final files = diary.files ?? [];
-
-    final headerTitle = diary.diaryTitle?.trim().isNotEmpty == true
-        ? _capitalize(diary.diaryTitle!.trim())
+    final String headerTitle = title.trim().isNotEmpty
+        ? _capitalize(title.trim())
         : 'General';
+    // final headerTitle = diary.diaryTitle?.trim().isNotEmpty == true
+    //     ? _capitalize(diary.diaryTitle!.trim())
+    //     : 'General';
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Container(

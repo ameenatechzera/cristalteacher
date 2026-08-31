@@ -1,5 +1,6 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/attendance/presentation/screens/attendance_report_screen.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
@@ -18,12 +19,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // TODO: point this at wherever TeacherDashboardResult / Datum / TodayPeriod
 // actually live in your project (the model you pasted earlier).
 
-
 class TeacherDashboardNewPage extends StatefulWidget {
   const TeacherDashboardNewPage({super.key});
 
   @override
-  State<TeacherDashboardNewPage> createState() => _TeacherDashboardNewPageState();
+  State<TeacherDashboardNewPage> createState() =>
+      _TeacherDashboardNewPageState();
 }
 
 class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
@@ -38,10 +39,7 @@ class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
     return MaterialApp(
       title: 'Teacher Dashboard',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Roboto',
-        useMaterial3: true,
-      ),
+      theme: ThemeData(fontFamily: 'Roboto', useMaterial3: true),
       home: const TeacherDashboardScreen(),
     );
   }
@@ -110,7 +108,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             AppData.accYear = activeAccYear;
 
             debugPrint("Academic Year : ${AppData.accYear}");
-
+            AppData.clearTutorshipData();
             context.read<AuthenticationCubit>().fetchTutorshipClass(
               FetchTutorshipClassRequest(
                 accyear: AppData.accYear,
@@ -138,7 +136,22 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         }
 
         if (state is FetchTutorshipClassSuccess) {
-          debugPrint("Tutorship Class Loaded");
+          final data = state.response.data;
+
+          AppData.tutorshipClasses = List<TutorshipClass>.from(
+            data?.tutorshipClass ?? <TutorshipClass>[],
+          );
+
+          AppData.standards = List<TutorshipClass>.from(
+            data?.standard ?? <TutorshipClass>[],
+          );
+
+          debugPrint('===================================');
+          debugPrint('TUTORSHIP DATA SAVED IN APPDATA');
+          debugPrint('Employee ID: ${AppData.employeeId}');
+          debugPrint('Tutorship classes: ${AppData.tutorshipClasses.length}');
+          debugPrint('Standards: ${AppData.standards.length}');
+          debugPrint('===================================');
         }
 
         if (state is FetchTutorshipClassFailure) {
@@ -208,15 +221,17 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                           _dashboardLoading
                               ? const _CardLoadingSkeleton()
                               : _CombinedCard(
-                            accentPurple: accentPurple,
-                            cardNavy: cardNavy,
-                            classAndDivision: _classInCharge.isEmpty
-                                ? '-'
-                                : '$_classInCharge $_divisionInCharge',
-                            studentCount: _studentCount,
-                            staffCode: _staffCode.isEmpty ? '-' : _staffCode,
-                            todayPeriods: _todayPeriods,
-                          ),
+                                  accentPurple: accentPurple,
+                                  cardNavy: cardNavy,
+                                  classAndDivision: _classInCharge.isEmpty
+                                      ? '-'
+                                      : '$_classInCharge $_divisionInCharge',
+                                  studentCount: _studentCount,
+                                  staffCode: _staffCode.isEmpty
+                                      ? '-'
+                                      : _staffCode,
+                                  todayPeriods: _todayPeriods,
+                                ),
                           const SizedBox(height: 8),
                         ],
                       ),
@@ -245,15 +260,39 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                           crossAxisSpacing: 8,
                           childAspectRatio: 0.90,
                           children: const [
-                            _QuickAccessItem(icon: Icons.menu_book_rounded, label: 'Diary'),
-                            _QuickAccessItem(icon: Icons.library_books_rounded, label: 'Material'),
-                            _QuickAccessItem(icon: Icons.photo_library_rounded, label: 'Feed'),
-                            _QuickAccessItem(icon: Icons.person_search_rounded, label: 'Attendance'),
-                            _QuickAccessItem(icon: Icons.assignment_rounded, label: 'Exam'),
-                            _QuickAccessItem(icon: Icons.calendar_month_rounded, label: 'Time Table'),
+                            _QuickAccessItem(
+                              icon: Icons.menu_book_rounded,
+                              label: 'Diary',
+                            ),
+                            _QuickAccessItem(
+                              icon: Icons.library_books_rounded,
+                              label: 'Material',
+                            ),
+                            _QuickAccessItem(
+                              icon: Icons.photo_library_rounded,
+                              label: 'Feed',
+                            ),
+                            _QuickAccessItem(
+                              icon: Icons.person_search_rounded,
+                              label: 'Attendance',
+                            ),
+                            _QuickAccessItem(
+                              icon: Icons.assignment_rounded,
+                              label: 'Exam',
+                            ),
+                            _QuickAccessItem(
+                              icon: Icons.calendar_month_rounded,
+                              label: 'Time Table',
+                            ),
 
-                            _QuickAccessItem(icon: Icons.calendar_month_rounded, label: 'Gate Pass'),
-                            _QuickAccessItem(icon: Icons.calendar_month_rounded, label: 'Work Plan'),
+                            _QuickAccessItem(
+                              icon: Icons.calendar_month_rounded,
+                              label: 'Gate Pass',
+                            ),
+                            _QuickAccessItem(
+                              icon: Icons.calendar_month_rounded,
+                              label: 'Work Plan',
+                            ),
                           ],
                         ),
                       ],
@@ -277,12 +316,10 @@ class _ProfileRow extends StatelessWidget {
         const CircleAvatar(
           radius: 26,
           backgroundColor: Colors.white,
-          backgroundImage: AssetImage(
-            'assets/images/defaultstudent.png',
-          ),
+          backgroundImage: AssetImage('assets/images/defaultstudent.png'),
         ),
         const SizedBox(width: 14),
-         Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -293,10 +330,7 @@ class _ProfileRow extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              '',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
+            Text('', style: TextStyle(color: Colors.white70, fontSize: 13)),
           ],
         ),
       ],
@@ -409,11 +443,7 @@ class _CombinedCard extends StatelessWidget {
 class _VerticalDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: 1,
-      color: Colors.grey.shade200,
-    );
+    return Container(height: 60, width: 1, color: Colors.grey.shade200);
   }
 }
 
@@ -478,8 +508,11 @@ class _ScheduleContent extends StatelessWidget {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.calendar_today_rounded,
-                  color: Color(0xFF1B2A6B), size: 16),
+              child: const Icon(
+                Icons.calendar_today_rounded,
+                color: Color(0xFF1B2A6B),
+                size: 16,
+              ),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -529,12 +562,16 @@ class _ScheduleContent extends StatelessWidget {
               itemBuilder: (context, index) {
                 final p = todayPeriods[index];
                 // "class" + "division" combined, e.g. "10" + "A" -> "10 A"
-                final classAndDivision =
-                [p.todayPeriodClass, p.division].where((s) => s.trim().isNotEmpty).join(' ');
+                final classAndDivision = [
+                  p.todayPeriodClass,
+                  p.division,
+                ].where((s) => s.trim().isNotEmpty).join(' ');
                 return SizedBox(
                   width: 110,
                   child: _ClassCard(
-                    classAndDivision: classAndDivision.isEmpty ? '-' : classAndDivision,
+                    classAndDivision: classAndDivision.isEmpty
+                        ? '-'
+                        : classAndDivision,
                     subject: p.subject,
                   ),
                 );
@@ -557,7 +594,7 @@ class _DottedConnector extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(
           4,
-              (index) => Padding(
+          (index) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Container(
               width: 4,
@@ -580,10 +617,7 @@ class _ClassCard extends StatelessWidget {
   final String classAndDivision;
   final String subject;
 
-  const _ClassCard({
-    required this.classAndDivision,
-    required this.subject,
-  });
+  const _ClassCard({required this.classAndDivision, required this.subject});
 
   @override
   Widget build(BuildContext context) {
