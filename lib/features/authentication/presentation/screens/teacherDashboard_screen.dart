@@ -18,17 +18,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // TODO: point this at wherever TeacherDashboardResult / Datum / TodayPeriod
 // actually live in your project (the model you pasted earlier).
 
-
 class TeacherDashboardNewPage extends StatefulWidget {
   const TeacherDashboardNewPage({super.key});
 
   @override
-  State<TeacherDashboardNewPage> createState() => _TeacherDashboardNewPageState();
+  State<TeacherDashboardNewPage> createState() =>
+      _TeacherDashboardNewPageState();
 }
 
 class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
   @override
   void initState() {
+    AppData.teacherSubject = '';
     _loadInitialData();
     super.initState();
   }
@@ -38,10 +39,7 @@ class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
     return MaterialApp(
       title: 'Teacher Dashboard',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Roboto',
-        useMaterial3: true,
-      ),
+      theme: ThemeData(fontFamily: 'Roboto', useMaterial3: true),
       home: const TeacherDashboardScreen(),
     );
   }
@@ -160,6 +158,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               _staffCode = datum.employeeCode;
               _todayPeriods = datum.todayPeriods;
               _dashboardLoading = false;
+              AppData.teacherSubject = datum.classChargeSubjects;
             });
           } else {
             setState(() => _dashboardLoading = false);
@@ -185,8 +184,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF3355D8),
-                    Color(0xFF1B2A6B),
+                    Color(0xFF004BBC),
+                    Color(0xFF9BB9E5),
                     Color(0xFFF4F6FB),
                   ],
                   stops: [0.0, 0.42, 0.78],
@@ -208,16 +207,18 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                           _dashboardLoading
                               ? const _CardLoadingSkeleton()
                               : _CombinedCard(
-                            accentPurple: accentPurple,
-                            cardNavy: cardNavy,
-                            classAndDivision: _classInCharge.isEmpty
-                                ? '-'
-                                : '$_classInCharge $_divisionInCharge',
-                            studentCount: _studentCount,
-                            staffCode: _staffCode.isEmpty ? '-' : _staffCode,
-                            todayPeriods: _todayPeriods,
-                          ),
-                          const SizedBox(height: 8),
+                                  accentPurple: accentPurple,
+                                  cardNavy: cardNavy,
+                                  classAndDivision: _classInCharge.isEmpty
+                                      ? '-'
+                                      : '$_classInCharge $_divisionInCharge',
+                                  studentCount: _studentCount,
+                                  staffCode: _staffCode.isEmpty
+                                      ? '-'
+                                      : _staffCode,
+                                  todayPeriods: _todayPeriods,
+                                ),
+                          const SizedBox(height: 0),
                         ],
                       ),
                     ),
@@ -236,24 +237,47 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 0),
                         GridView.count(
                           crossAxisCount: 3,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 0.90,
+                          mainAxisSpacing: 5,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 0.98,
                           children: const [
-                            _QuickAccessItem(icon: Icons.menu_book_rounded, label: 'Diary'),
-                            _QuickAccessItem(icon: Icons.library_books_rounded, label: 'Material'),
-                            _QuickAccessItem(icon: Icons.photo_library_rounded, label: 'Feed'),
-                            _QuickAccessItem(icon: Icons.person_search_rounded, label: 'Attendance'),
-                            _QuickAccessItem(icon: Icons.assignment_rounded, label: 'Exam'),
-                            _QuickAccessItem(icon: Icons.calendar_month_rounded, label: 'Time Table'),
-
-                            _QuickAccessItem(icon: Icons.calendar_month_rounded, label: 'Gate Pass'),
-                            _QuickAccessItem(icon: Icons.calendar_month_rounded, label: 'Work Plan'),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/diary.png',
+                              label: 'Diary',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/material.png',
+                              label: 'Material',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/feed.png',
+                              label: 'Feed',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/attendance.png',
+                              label: 'Attendance',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/exam.png',
+                              label: 'Exam',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/timetable.png',
+                              label: 'Time Table',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/gatepass.png',
+                              label: 'Gate Pass',
+                            ),
+                            _QuickAccessItem(
+                              imagePath: 'assets/images/workplan.png',
+                              label: 'Work Plan',
+                            ),
                           ],
                         ),
                       ],
@@ -274,15 +298,36 @@ class _ProfileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 26,
-          backgroundColor: Colors.white,
-          backgroundImage: AssetImage(
-            'assets/images/defaultstudent.png',
+        Container(
+          // Outer white ring
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Container(
+            // Inner white ring (creates the "layered" double-ring look)
+            padding: const EdgeInsets.all(2),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white,
+              backgroundImage: AssetImage('assets/images/defaultstudent.png'),
+            ),
           ),
         ),
         const SizedBox(width: 14),
-         Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -294,8 +339,8 @@ class _ProfileRow extends StatelessWidget {
               ),
             ),
             Text(
-              '',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+              AppData.teacherSubject!,
+              style: TextStyle(color: Colors.white, fontSize: 13),
             ),
           ],
         ),
@@ -395,7 +440,8 @@ class _CombinedCard extends StatelessWidget {
             // ---- Dark navy schedule section (bottom) ----
             Container(
               width: double.infinity,
-              color: cardNavy,
+              color: Color(0xFF004BBC),
+
               padding: const EdgeInsets.all(18),
               child: _ScheduleContent(todayPeriods: todayPeriods),
             ),
@@ -409,11 +455,7 @@ class _CombinedCard extends StatelessWidget {
 class _VerticalDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: 1,
-      color: Colors.grey.shade200,
-    );
+    return Container(height: 60, width: 1, color: Colors.grey.shade200);
   }
 }
 
@@ -461,9 +503,27 @@ class _StatItem extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Drop-in replacement for _ScheduleContent, _DottedConnector, and _ClassCard
+// in your TeacherDashboardNewPage file. Matches the screenshot:
+//   - "Today You Have" + "View Full Schedule" link restored
+//   - Each class card shows TIME on top, then bold Class/Division, then Subject
+//   - Cards have a subtle blue gradient + rounded border (not flat white24)
+//   - Green check badge overlaps the bottom edge of the card
+//   - Dotted connector between cards
+//
+// ⚠️ TODO: Replace `p.startTimeDisplay` below with whatever your TodayPeriod
+// model actually calls its start-time field (e.g. p.startTime, p.fromTime,
+// p.periodTime). I used a placeholder name since I don't have that model.
+// ---------------------------------------------------------------------------
+
 class _ScheduleContent extends StatelessWidget {
   final List<TodayPeriod> todayPeriods;
+
   const _ScheduleContent({required this.todayPeriods});
+
+  static const double _rowHeight = 130;
+  static const double _cardHeight = 118;
 
   @override
   Widget build(BuildContext context) {
@@ -478,8 +538,11 @@ class _ScheduleContent extends StatelessWidget {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.calendar_today_rounded,
-                  color: Color(0xFF1B2A6B), size: 16),
+              child: const Icon(
+                Icons.calendar_today_rounded,
+                color: Color(0xFF004BBC),
+                size: 16,
+              ),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -487,12 +550,20 @@ class _ScheduleContent extends StatelessWidget {
               style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const Spacer(),
-            const Text(
-              'View Full Schedule',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                decoration: TextDecoration.underline,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => TimeTableScreen()),
+                );
+              },
+              child: const Text(
+                'View Full Schedule',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ],
@@ -520,22 +591,43 @@ class _ScheduleContent extends StatelessWidget {
           )
         else
           SizedBox(
-            height: 100,
+            height: _rowHeight,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemCount: todayPeriods.length,
-              separatorBuilder: (_, __) => const _DottedConnector(),
+              separatorBuilder: (_, __) => const SizedBox(
+                width: 27,
+                height: _rowHeight,
+                // Pin the connector to the SAME reference frame as the card
+                // (top-aligned, exactly _cardHeight tall) instead of letting
+                // it center inside the full 130px row.
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    height: _cardHeight,
+                    child: _DottedConnector(),
+                  ),
+                ),
+              ),
               itemBuilder: (context, index) {
                 final p = todayPeriods[index];
-                // "class" + "division" combined, e.g. "10" + "A" -> "10 A"
-                final classAndDivision =
-                [p.todayPeriodClass, p.division].where((s) => s.trim().isNotEmpty).join(' ');
-                return SizedBox(
-                  width: 110,
-                  child: _ClassCard(
-                    classAndDivision: classAndDivision.isEmpty ? '-' : classAndDivision,
-                    subject: p.subject,
+                final classAndDivision = [
+                  p.todayPeriodClass,
+                  p.division,
+                ].where((s) => s.trim().isNotEmpty).join(' ');
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: 90,
+                    height: _cardHeight, // <- exact content height, not 130
+                    child: _ClassCard(
+                      time: '', // TODO: p.startTime / whatever your field is
+                      classAndDivision: classAndDivision.isEmpty
+                          ? '-'
+                          : classAndDivision,
+                      subject: p.subject,
+                    ),
                   ),
                 );
               },
@@ -546,41 +638,52 @@ class _ScheduleContent extends StatelessWidget {
   }
 }
 
+/// Horizontal dashed line, positioned so its dots sit at the SAME vertical
+/// center as the green badge below each card (badge sits ~6px below the
+/// card's bottom edge — this mirrors that offset, adjusted for the dot's
+/// own (smaller) height so the visual centers line up).
 class _DottedConnector extends StatelessWidget {
   const _DottedConnector();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 14,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          4,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          bottom: 52, // tweak by eye ±2px if it's not dead-center on the badge
+          left: 0,
+          right: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: List.generate(
+              3,
               (index) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white54,
-                shape: BoxShape.circle,
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    color: Colors.white70,
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
-/// Time is intentionally skipped — shows only the combined class/division
-/// (e.g. "10 A") and the subject.
 class _ClassCard extends StatelessWidget {
+  final String time;
   final String classAndDivision;
   final String subject;
 
   const _ClassCard({
+    required this.time,
     required this.classAndDivision,
     required this.subject,
   });
@@ -589,24 +692,39 @@ class _ClassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
-      alignment: Alignment.bottomCenter,
       children: [
-        // Fixed size for every card, regardless of text length — long
-        // subject names truncate with an ellipsis instead of overflowing.
         SizedBox(
-          width: 110,
-          height: 125,
-
+          width: 90,
+          height: 118,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.14),
+                  Colors.white.withOpacity(0.05),
+                ],
+              ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white24),
+              border: Border.all(color: Colors.white38, width: 1.2),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                Text(
+                  time,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
                 Text(
                   classAndDivision,
                   textAlign: TextAlign.center,
@@ -614,11 +732,11 @@ class _ClassCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   subject,
                   textAlign: TextAlign.center,
@@ -630,15 +748,21 @@ class _ClassCard extends StatelessWidget {
             ),
           ),
         ),
+        // Explicit left/right + Center — no longer relies on Stack alignment.
         Positioned(
-          bottom: 0,
-          child: Container(
-            padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
+          bottom: -10,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF25336E), width: 2),
+              ),
+              child: const Icon(Icons.check, color: Colors.white, size: 14),
             ),
-            child: const Icon(Icons.check, color: Colors.white, size: 12),
           ),
         ),
       ],
@@ -646,11 +770,87 @@ class _ClassCard extends StatelessWidget {
   }
 }
 
+/// Time is intentionally skipped — shows only the combined class/division
+/// (e.g. "10 A") and the subject.
+// class _ClassCard extends StatelessWidget {
+//   final String classAndDivision;
+//   final String subject;
+//
+//   const _ClassCard({
+//     required this.classAndDivision,
+//     required this.subject,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Stack(
+//       clipBehavior: Clip.none,
+//       alignment: Alignment.bottomCenter,
+//       children: [
+//         // Fixed size for every card, regardless of text length — long
+//         // subject names truncate with an ellipsis instead of overflowing.
+//         SizedBox(
+//           width: 110,
+//           height: 125,
+//           child: Container(
+//             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+//             decoration: BoxDecoration(
+//               color: Colors.white.withOpacity(0.08),
+//               borderRadius: BorderRadius.circular(16),
+//               border: Border.all(color: Colors.white24),
+//             ),
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   classAndDivision,
+//                   textAlign: TextAlign.center,
+//                   maxLines: 1,
+//                   overflow: TextOverflow.ellipsis,
+//                   style: const TextStyle(
+//                     color: Colors.white,
+//                     fontSize: 13,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 3),
+//                 Text(
+//                   subject,
+//                   textAlign: TextAlign.center,
+//                   maxLines: 1,
+//                   overflow: TextOverflow.ellipsis,
+//                   style: const TextStyle(color: Colors.white70, fontSize: 12),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//         Positioned(
+//           bottom: 10,
+//           child: Container(
+//             padding: const EdgeInsets.all(3),
+//             decoration: const BoxDecoration(
+//               color: Colors.green,
+//               shape: BoxShape.circle,
+//             ),
+//             child: const Icon(Icons.check, color: Colors.white, size: 15),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
+
 class _QuickAccessItem extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String label;
 
-  const _QuickAccessItem({required this.icon, required this.label});
+  const _QuickAccessItem({this.icon, this.imagePath, required this.label})
+    : assert(
+        icon != null || imagePath != null,
+        'Provide either an icon or an imagePath',
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -708,23 +908,28 @@ class _QuickAccessItem extends StatelessWidget {
             }
           },
           child: Container(
-            height: 56,
-            width: 56,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: const Color(0xFF6C4CE0), size: 26),
+            height: 76,
+            width: 76,
+            // decoration: BoxDecoration(
+            //   color: Colors.white,
+            //   borderRadius: BorderRadius.circular(16),
+            //   boxShadow: [
+            //     BoxShadow(
+            //       color: Colors.black.withOpacity(0.06),
+            //       blurRadius: 8,
+            //       offset: const Offset(0, 4),
+            //     ),
+            //   ],
+            // ),
+            child: imagePath != null
+                ? Padding(
+                    padding: const EdgeInsets.only(left: 4, right: 8),
+                    child: Image.asset(imagePath!, fit: BoxFit.contain),
+                  )
+                : Icon(icon, color: const Color(0xFF6C4CE0), size: 26),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 0),
         Text(
           label,
           style: const TextStyle(fontSize: 13, color: Colors.black87),

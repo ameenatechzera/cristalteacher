@@ -24,5 +24,6 @@ class AppData {
   static int? employeeId;
   static int? userId;
   static String? teacherName;
+  static String? teacherSubject;
 
 }

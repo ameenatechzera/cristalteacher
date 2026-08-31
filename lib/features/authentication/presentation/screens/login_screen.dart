@@ -161,9 +161,10 @@ class _LoginScreenState extends State<LoginScreen> {
         // }
 
         if (state is AuthenticationFailure) {
+          print('errorLogin');
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          ).showSnackBar(SnackBar(content: Text('Invalid Username Or Password..!')));
         }
 
         if (state is FetchTutorshipClassFailure) {
@@ -202,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           bottomLeft: Radius.circular(50),
                         ),
                       ),
-                      child: const Column(
+                      child:  Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -215,8 +216,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           SizedBox(height: 8),
+
                           Text(
-                            'School Name',
+                            AppData.schoolName!,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 22,

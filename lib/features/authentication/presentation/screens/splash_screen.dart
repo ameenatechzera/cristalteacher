@@ -67,7 +67,7 @@ class _AppStartScreenState extends State<AppStartScreen> {
       body: SafeArea(
         child: Center(
           child: Image(
-            image: AssetImage('assets/images/Rectangle 95.png'),
+            image: AssetImage('assets/images/cristal_horizontal.png'),
             height: 180,
           ),
         ),
