@@ -1,7 +1,6 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/core/functions/functions.dart';
 import 'package:cristalteacher/features/attendance/presentation/screens/attendance_report_screen.dart';
-import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
@@ -16,9 +15,7 @@ import 'package:cristalteacher/features/workplan/presentation/screens/workplan_d
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-// TODO: point this at wherever TeacherDashboardResult / Datum / TodayPeriod
-// actually live in your project (the model you pasted earlier).
+import 'package:fluttertoast/fluttertoast.dart';
 
 class TeacherDashboardNewPage extends StatefulWidget {
   const TeacherDashboardNewPage({super.key});
@@ -34,8 +31,8 @@ class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
     AppData.teacherSubject = '';
     _loadInitialData();
     DailyTaskRunner.runOncePerDay(() async {
-      // your function here
       print('Running once per day!');
+      if (!mounted) return;
       context.read<AuthenticationCubit>().fetchTeacherDashboard(
         TeacherDashboardRequest(
           accYear: AppData.accYear!,
@@ -45,7 +42,6 @@ class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
       );
     });
     super.initState();
-
   }
 
   @override
@@ -69,10 +65,6 @@ class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
     AppData.userId = login.data?.user?.id;
     AppData.teacherName = login.data?.user!.name;
 
-    // NOTE: fetchTeacherDashboard needs AppData.accYear, which fetchAccYear()
-    // sets asynchronously. Do NOT call fetchTeacherDashboard here — it must
-    // fire only after FetchAccYearSuccess arrives (see the listener below),
-    // otherwise AppData.accYear! will throw a null-check error.
     context.read<AuthenticationCubit>().fetchAccYear();
   }
 }
@@ -89,8 +81,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   static const Color accentPurple = Color(0xFF6C4CE0);
   static const Color cardNavy = Color(0xFF25336E);
 
-  // Populated once FetchTeacherDashboardSuccess arrives — kept in State so
-  // the values survive later bloc state changes (e.g. loading states).
   String _classInCharge = '';
   String _divisionInCharge = '';
   int _studentCount = 0;
@@ -131,8 +121,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               ),
             );
 
-            // Fired here — the first point where AppData.accYear and
-            // AppData.employeeId are guaranteed to be non-null.
             context.read<AuthenticationCubit>().fetchTeacherDashboard(
               TeacherDashboardRequest(
                 accYear: AppData.accYear!,
@@ -150,19 +138,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         }
 
         if (state is FetchTutorshipClassSuccess) {
-          final responseData = state.response.data;
-
-          AppData.saveTutorshipData(
-            tutorshipList: responseData?.tutorshipClass ?? <TutorshipClass>[],
-            standardList: responseData?.standard ?? <TutorshipClass>[],
-          );
-
-          debugPrint('===================================');
-          debugPrint('TUTORSHIP DATA SAVED');
-          debugPrint('Employee ID: ${AppData.employeeId}');
-          debugPrint('Tutorship classes: ${AppData.tutorshipClasses.length}');
-          debugPrint('Standards: ${AppData.standards.length}');
-          debugPrint('===================================');
+          debugPrint("Tutorship Class Loaded");
         }
 
         if (state is FetchTutorshipClassFailure) {
@@ -171,7 +147,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           ).showSnackBar(SnackBar(content: Text(state.message)));
         }
 
-        // ---- Teacher dashboard result: drives the stats + class cards ----
         if (state is FetchDashboardSuccess) {
           final TeacherDashboardResult result = state.response;
           final list = result.data;
@@ -202,72 +177,75 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: const Color(0xFFF4F6FB),
-          body: SingleChildScrollView(
-            child: Container(
-              // ---- Single continuous gradient for the whole page ----
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF004BBC),
-                    Color(0xFF9BB9E5),
-                    Color(0xFFF4F6FB),
-                  ],
-                  stops: [0.0, 0.42, 0.78],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          _ProfileRow(),
-                          const SizedBox(height: 20),
-                          _dashboardLoading
-                              ? const _CardLoadingSkeleton()
-                              : _CombinedCard(
-                                  accentPurple: accentPurple,
-                                  cardNavy: cardNavy,
-                                  classAndDivision: _classInCharge.isEmpty
-                                      ? '-'
-                                      : '$_classInCharge $_divisionInCharge',
-                                  studentCount: _studentCount,
-                                  staffCode: _staffCode.isEmpty
-                                      ? '-'
-                                      : _staffCode,
-                                  todayPeriods: _todayPeriods,
-                                ),
-                          const SizedBox(height: 0),
-                        ],
-                      ),
-                    ),
+          // 👇 Column instead of SingleChildScrollView — page itself
+          // no longer scrolls as a whole. Only Quick Access (below) scrolls.
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ---- Fixed header + stats card (gradient section) ----
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF004BBC),
+                      Color(0xFF9BB9E5),
+                      Color(0xFFF4F6FB),
+                    ],
+                    stops: [0.0, 0.42, 0.78],
                   ),
-                  // ---- Quick Access ----
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 15, 20, 20),
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Quick Access',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                        const SizedBox(height: 8),
+                        _ProfileRow(),
+                        const SizedBox(height: 20),
+                        _dashboardLoading
+                            ? const _CardLoadingSkeleton()
+                            : _CombinedCard(
+                          accentPurple: accentPurple,
+                          cardNavy: cardNavy,
+                          classAndDivision: _classInCharge.isEmpty
+                              ? '-'
+                              : '$_classInCharge $_divisionInCharge',
+                          studentCount: _studentCount,
+                          staffCode: _staffCode.isEmpty
+                              ? '-'
+                              : _staffCode,
+                          todayPeriods: _todayPeriods,
                         ),
-                        const SizedBox(height: 0),
-                        GridView.count(
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ---- Quick Access section — the ONLY scrollable part ----
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 15, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Quick Access',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: GridView.count(
                           crossAxisCount: 3,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
+                          physics: const ClampingScrollPhysics(), // 👈 scrollable
                           mainAxisSpacing: 5,
                           crossAxisSpacing: 10,
                           childAspectRatio: 0.98,
@@ -306,12 +284,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -325,7 +303,6 @@ class _ProfileRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          // Outer white ring
           padding: const EdgeInsets.all(2),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -339,7 +316,6 @@ class _ProfileRow extends StatelessWidget {
             ],
           ),
           child: Container(
-            // Inner white ring (creates the "layered" double-ring look)
             padding: const EdgeInsets.all(2),
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -358,7 +334,7 @@ class _ProfileRow extends StatelessWidget {
           children: [
             Text(
               AppData.teacherName!,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -366,7 +342,7 @@ class _ProfileRow extends StatelessWidget {
             ),
             Text(
               AppData.teacherSubject!,
-              style: TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
           ],
         ),
@@ -375,8 +351,6 @@ class _ProfileRow extends StatelessWidget {
   }
 }
 
-/// Shown in place of the card while the teacher-dashboard request is
-/// in flight, so the layout doesn't jump once data arrives.
 class _CardLoadingSkeleton extends StatelessWidget {
   const _CardLoadingSkeleton();
 
@@ -394,9 +368,6 @@ class _CardLoadingSkeleton extends StatelessWidget {
   }
 }
 
-/// One rounded card containing BOTH the white stats section on top and the
-/// dark navy schedule section on the bottom, with a single sharp boundary
-/// between them (no gap, no blur, no color bleed) and one outer shadow.
 class _CombinedCard extends StatelessWidget {
   final Color accentPurple;
   final Color cardNavy;
@@ -432,7 +403,6 @@ class _CombinedCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ---- White stats section (top) ----
             Container(
               width: double.infinity,
               color: Colors.white,
@@ -463,11 +433,9 @@ class _CombinedCard extends StatelessWidget {
                 ],
               ),
             ),
-            // ---- Dark navy schedule section (bottom) ----
             Container(
               width: double.infinity,
-              color: Color(0xFF004BBC),
-
+              color: const Color(0xFF004BBC),
               padding: const EdgeInsets.all(18),
               child: _ScheduleContent(todayPeriods: todayPeriods),
             ),
@@ -528,20 +496,6 @@ class _StatItem extends StatelessWidget {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Drop-in replacement for _ScheduleContent, _DottedConnector, and _ClassCard
-// in your TeacherDashboardNewPage file. Matches the screenshot:
-//   - "Today You Have" + "View Full Schedule" link restored
-//   - Each class card shows TIME on top, then bold Class/Division, then Subject
-//   - Cards have a subtle blue gradient + rounded border (not flat white24)
-//   - Green check badge overlaps the bottom edge of the card
-//   - Dotted connector between cards
-//
-// ⚠️ TODO: Replace `p.startTimeDisplay` below with whatever your TodayPeriod
-// model actually calls its start-time field (e.g. p.startTime, p.fromTime,
-// p.periodTime). I used a placeholder name since I don't have that model.
-// ---------------------------------------------------------------------------
 
 class _ScheduleContent extends StatelessWidget {
   final List<TodayPeriod> todayPeriods;
@@ -625,9 +579,6 @@ class _ScheduleContent extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(
                 width: 27,
                 height: _rowHeight,
-                // Pin the connector to the SAME reference frame as the card
-                // (top-aligned, exactly _cardHeight tall) instead of letting
-                // it center inside the full 130px row.
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: SizedBox(
@@ -646,9 +597,9 @@ class _ScheduleContent extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: SizedBox(
                     width: 90,
-                    height: _cardHeight, // <- exact content height, not 130
+                    height: _cardHeight,
                     child: _ClassCard(
-                      time: '', // TODO: p.startTime / whatever your field is
+                      time: '',
                       classAndDivision: classAndDivision.isEmpty
                           ? '-'
                           : classAndDivision,
@@ -664,10 +615,6 @@ class _ScheduleContent extends StatelessWidget {
   }
 }
 
-/// Horizontal dashed line, positioned so its dots sit at the SAME vertical
-/// center as the green badge below each card (badge sits ~6px below the
-/// card's bottom edge — this mirrors that offset, adjusted for the dot's
-/// own (smaller) height so the visual centers line up).
 class _DottedConnector extends StatelessWidget {
   const _DottedConnector();
 
@@ -677,14 +624,14 @@ class _DottedConnector extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Positioned(
-          bottom: 52, // tweak by eye ±2px if it's not dead-center on the badge
+          bottom: 52,
           left: 0,
           right: 0,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(
               3,
-              (index) => Padding(
+                  (index) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Container(
                   width: 5,
@@ -774,7 +721,6 @@ class _ClassCard extends StatelessWidget {
             ),
           ),
         ),
-        // Explicit left/right + Center — no longer relies on Stack alignment.
         Positioned(
           bottom: -10,
           left: 0,
@@ -796,259 +742,103 @@ class _ClassCard extends StatelessWidget {
   }
 }
 
-/// Time is intentionally skipped — shows only the combined class/division
-/// (e.g. "10 A") and the subject.
-// class _ClassCard extends StatelessWidget {
-//   final String classAndDivision;
-//   final String subject;
-//
-//   const _ClassCard({
-//     required this.classAndDivision,
-//     required this.subject,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Stack(
-//       clipBehavior: Clip.none,
-//       alignment: Alignment.bottomCenter,
-//       children: [
-//         // Fixed size for every card, regardless of text length — long
-//         // subject names truncate with an ellipsis instead of overflowing.
-//         SizedBox(
-//           width: 110,
-//           height: 125,
-//           child: Container(
-//             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-//             decoration: BoxDecoration(
-//               color: Colors.white.withOpacity(0.08),
-//               borderRadius: BorderRadius.circular(16),
-//               border: Border.all(color: Colors.white24),
-//             ),
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   classAndDivision,
-//                   textAlign: TextAlign.center,
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                   style: const TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 13,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 3),
-//                 Text(
-//                   subject,
-//                   textAlign: TextAlign.center,
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                   style: const TextStyle(color: Colors.white70, fontSize: 12),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//         Positioned(
-//           bottom: 10,
-//           child: Container(
-//             padding: const EdgeInsets.all(3),
-//             decoration: const BoxDecoration(
-//               color: Colors.green,
-//               shape: BoxShape.circle,
-//             ),
-//             child: const Icon(Icons.check, color: Colors.white, size: 15),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
 class _QuickAccessItem extends StatelessWidget {
   final IconData? icon;
   final String? imagePath;
   final String label;
 
   const _QuickAccessItem({this.icon, this.imagePath, required this.label})
-    : assert(
-        icon != null || imagePath != null,
-        'Provide either an icon or an imagePath',
+      : assert(
+  icon != null || imagePath != null,
+  'Provide either an icon or an imagePath',
+  );
+
+  Future<void> _runDailyDashboardRefresh(BuildContext context) async {
+    if (!context.mounted) return;
+    await DailyTaskRunner.runOncePerDay(() async {
+      print('Running once per day!');
+      if (!context.mounted) return;
+      context.read<AuthenticationCubit>().fetchTeacherDashboard(
+        TeacherDashboardRequest(
+          accYear: AppData.accYear!,
+          employeeId: AppData.employeeId!,
+          branchId: 1,
+        ),
       );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         InkWell(
-          onTap: () {
+          onTap: () async {
             if (label == 'Material') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => MaterialsScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Feed') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => FeedScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              print('feed back');
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Diary') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => DiaryTypeScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Attendance') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => AttendanceReportScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Exam') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => ExamScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Time Table') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => TimeTableScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Gate Pass') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => GatePassScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
             if (label == 'Work Plan') {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => WorkplanDetialsScreen()),
               );
-              if (!context.mounted) return; // ✅ works in StatelessWidget too
-              DailyTaskRunner.runOncePerDay(() async {
-                // your function here
-                print('Running once per day!');
-                context.read<AuthenticationCubit>().fetchTeacherDashboard(
-                  TeacherDashboardRequest(
-                    accYear: AppData.accYear!,
-                    employeeId: AppData.employeeId!,
-                    branchId: 1,
-                  ),
-                );
-              });
+              await _runDailyDashboardRefresh(context);
             }
           },
           child: Container(
             height: 76,
             width: 76,
-            // decoration: BoxDecoration(
-            //   color: Colors.white,
-            //   borderRadius: BorderRadius.circular(16),
-            //   boxShadow: [
-            //     BoxShadow(
-            //       color: Colors.black.withOpacity(0.06),
-            //       blurRadius: 8,
-            //       offset: const Offset(0, 4),
-            //     ),
-            //   ],
-            // ),
             child: imagePath != null
                 ? Padding(
-                    padding: const EdgeInsets.only(left: 4, right: 8),
-                    child: Image.asset(imagePath!, fit: BoxFit.contain),
-                  )
+              padding: const EdgeInsets.only(left: 4, right: 8),
+              child: Image.asset(imagePath!, fit: BoxFit.contain),
+            )
                 : Icon(icon, color: const Color(0xFF6C4CE0), size: 26),
           ),
         ),
