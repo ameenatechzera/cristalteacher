@@ -1,4 +1,4 @@
-class SaveDiaryParameter {
+class UpdateDiaryParameter {
   final String accYear;
   final int standardId;
   final int divisionId;
@@ -12,11 +12,11 @@ class SaveDiaryParameter {
   final bool isActive;
   final bool isFavourite;
   final int branchId;
-  final String createdUser;
+  final String modifiedUser;
   final List<String> files;
   final String videoUrl;
 
-  const SaveDiaryParameter({
+  const UpdateDiaryParameter({
     required this.accYear,
     required this.standardId,
     required this.divisionId,
@@ -30,7 +30,7 @@ class SaveDiaryParameter {
     required this.isActive,
     required this.isFavourite,
     required this.branchId,
-    required this.createdUser,
+    required this.modifiedUser,
     required this.files,
     required this.videoUrl,
   });
@@ -50,7 +50,7 @@ class SaveDiaryParameter {
       "isActive": isActive,
       "isFavourite": isFavourite,
       "branchId": branchId,
-      "CreatedUser": createdUser,
+      "ModifiedUser": modifiedUser,
       "files": files,
       "videoUrl": videoUrl,
     };

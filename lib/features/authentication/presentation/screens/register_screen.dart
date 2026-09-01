@@ -56,6 +56,7 @@ class RegisterCodePage extends StatelessWidget {
                       fit: BoxFit.contain,
                     ),
                   ),
+
                 ],
               ),
             ),
@@ -64,7 +65,7 @@ class RegisterCodePage extends StatelessWidget {
 
             // Register Code Title
             const Text(
-              "Register Code",
+              "School Code",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

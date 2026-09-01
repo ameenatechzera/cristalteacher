@@ -39,6 +39,11 @@
 //   // has something to render the moment it opens.
 //   List<TutorshipClass> tutorshipClasses = [];
 
+//   // Search state. Lives on the screen so the query survives list
+//   // rebuilds and pull-to-refresh.
+//   final TextEditingController _searchController = TextEditingController();
+//   String _searchQuery = '';
+
 //   @override
 //   void initState() {
 //     super.initState();
@@ -52,19 +57,46 @@
 //     });
 //   }
 
+//   @override
+//   void dispose() {
+//     _searchController.dispose();
+//     super.dispose();
+//   }
+
+//   String _formatApiDate(DateTime date) {
+//     final year = date.year.toString();
+//     final month = date.month.toString().padLeft(2, '0');
+//     final day = date.day.toString().padLeft(2, '0');
+
+//     return '$year-$month-$day';
+//   }
+
 //   void _fetchDiary() {
+//     // Use the range picked in the drawer. When only "From" is chosen the
+//     // range collapses to that single day; with nothing chosen it stays
+//     // on today, exactly as before.
+//     final requestFromDate = fromDate != null
+//         ? _formatApiDate(fromDate!)
+//         : currentDate;
+
+//     final requestToDate = toDate != null
+//         ? _formatApiDate(toDate!)
+//         : (fromDate != null ? _formatApiDate(fromDate!) : currentDate);
+
 //     final request = FetchDiaryParameter(
 //       branchId: widget.branchId,
-//       standardId: selectedStandardId ?? 1,
-//       divisionId: selectedDivisionId ?? 1,
+//       standardId: selectedStandardId,
+//       divisionId: selectedDivisionId,
 //       accyear: AppData.accYear!,
-//       fromDate: currentDate,
-//       toDate: currentDate,
+//       fromDate: requestFromDate,
+//       toDate: requestToDate,
 //       userId: AppData.employeeId.toString(),
 //     );
 
 //     debugPrint('====================================');
 //     debugPrint('📘 FETCH DIARY');
+//     debugPrint('Standard: $selectedStandardId  Division: $selectedDivisionId');
+//     debugPrint('Range: $requestFromDate -> $requestToDate');
 //     debugPrint('Request: ${request.toJson()}');
 //     debugPrint('====================================');
 
@@ -96,16 +128,50 @@
 //       selectedDivisionId = divisionId ?? selectedDivisionId;
 //       selectedSubjectId = subjectId ?? selectedSubjectId;
 
-//       if (fromDate != null) {
-//         this.fromDate = fromDate;
-//       }
-
-//       if (toDate != null) {
-//         this.toDate = toDate;
-//       }
+//       // Assigned directly (not null-guarded) so "Reset All" + Apply
+//       // actually clears the range back to today.
+//       this.fromDate = fromDate;
+//       this.toDate = toDate;
 //     });
 
 //     _fetchDiary();
+//   }
+
+//   /// Client-side search over the diaries the API already returned.
+//   List<DiaryEntity> _filterDiaries(List<DiaryEntity> diaries) {
+//     final query = _searchQuery.trim().toLowerCase();
+
+//     if (query.isEmpty) {
+//       return diaries;
+//     }
+
+//     return diaries.where((diary) {
+//       final title = _removeHtml(diary.diaryTitle).toLowerCase();
+//       final description = _removeHtml(diary.description).toLowerCase();
+//       final type = (diary.diaryTypeName ?? '').toLowerCase();
+
+//       return title.contains(query) ||
+//           description.contains(query) ||
+//           type.contains(query);
+//     }).toList();
+//   }
+
+//   Widget _buildSearchBox() {
+//     return _SearchBox(
+//       controller: _searchController,
+//       onChanged: (value) {
+//         setState(() {
+//           _searchQuery = value;
+//         });
+//       },
+//       onClear: () {
+//         _searchController.clear();
+
+//         setState(() {
+//           _searchQuery = '';
+//         });
+//       },
+//     );
 //   }
 
 //   Map<String, List<DiaryEntity>> _groupByDate(List<DiaryEntity> diaries) {
@@ -359,25 +425,30 @@
 //   }
 
 //   Widget _buildDiaryList(List<DiaryEntity> diaries) {
-//     if (diaries.isEmpty) {
+//     final filtered = _filterDiaries(diaries);
+
+//     if (filtered.isEmpty) {
 //       return ListView(
 //         physics: const AlwaysScrollableScrollPhysics(),
 //         padding: const EdgeInsets.fromLTRB(18, 12, 18, 100),
-//         children: const [
-//           _SearchBox(),
-//           SizedBox(height: 250),
+//         children: [
+//           _buildSearchBox(),
+//           const SizedBox(height: 250),
 //           Center(
 //             child: Text(
-//               'No diary entries found',
-//               style: TextStyle(fontSize: 14, color: Colors.grey),
+//               _searchQuery.trim().isEmpty
+//                   ? 'No diary entries found'
+//                   : 'No results for "${_searchQuery.trim()}"',
+//               textAlign: TextAlign.center,
+//               style: const TextStyle(fontSize: 14, color: Colors.grey),
 //             ),
 //           ),
 //         ],
 //       );
 //     }
 
-//     final groupedDiaries = _groupByDate(diaries);
-//     final widgets = <Widget>[const _SearchBox(), const SizedBox(height: 12)];
+//     final groupedDiaries = _groupByDate(filtered);
+//     final widgets = <Widget>[_buildSearchBox(), const SizedBox(height: 12)];
 
 //     groupedDiaries.forEach((date, dateDiaries) {
 //       widgets.add(_DateTitle(date: _formatDisplayDate(date)));
@@ -391,6 +462,7 @@
 //             title: _removeHtml(diary.diaryTitle),
 //             description: _removeHtml(diary.description),
 //             time: _formatTime(diary.createdDate),
+//             onRefresh: _fetchDiary,
 //           ),
 //         );
 
@@ -419,7 +491,9 @@
 //   Widget build(BuildContext context) {
 //     return Container(
 //       height: 62,
-//       padding: const EdgeInsets.symmetric(horizontal: 22),
+//       // Must match the horizontal padding of the diary ListView (18)
+//       // so the back icon lines up with the search field's border.
+//       padding: const EdgeInsets.symmetric(horizontal: 18),
 //       color: const Color(0xffF7F7F7),
 //       child: Stack(
 //         alignment: Alignment.center,
@@ -440,18 +514,24 @@
 //             child: Row(
 //               mainAxisSize: MainAxisSize.min,
 //               children: [
-//                 // Back button first
+//                 // Back button first — icon pinned to the left edge of its
+//                 // 36x36 tap target so it starts on the same line as the
+//                 // search box, instead of being centered inside it.
 //                 GestureDetector(
 //                   onTap: () {
 //                     Navigator.of(context).pop();
 //                   },
+//                   behavior: HitTestBehavior.opaque,
 //                   child: const SizedBox(
 //                     width: 36,
 //                     height: 36,
-//                     child: Icon(
-//                       Icons.arrow_back,
-//                       color: Colors.black,
-//                       size: 23,
+//                     child: Align(
+//                       alignment: Alignment.centerLeft,
+//                       child: Icon(
+//                         Icons.arrow_back,
+//                         color: Colors.black,
+//                         size: 23,
+//                       ),
 //                     ),
 //                   ),
 //                 ),
@@ -485,7 +565,15 @@
 // }
 
 // class _SearchBox extends StatelessWidget {
-//   const _SearchBox();
+//   final TextEditingController controller;
+//   final ValueChanged<String> onChanged;
+//   final VoidCallback onClear;
+
+//   const _SearchBox({
+//     required this.controller,
+//     required this.onChanged,
+//     required this.onClear,
+//   });
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -496,14 +584,31 @@
 //         border: Border.all(color: const Color(0xffA9A9A9), width: 0.8),
 //         borderRadius: BorderRadius.circular(4),
 //       ),
-//       child: const TextField(
-//         readOnly: true,
+//       child: TextField(
+//         controller: controller,
+//         onChanged: onChanged,
+//         textInputAction: TextInputAction.search,
+//         style: const TextStyle(fontSize: 12, color: Color(0xff333333)),
 //         decoration: InputDecoration(
-//           prefixIcon: Icon(Icons.search, size: 17, color: Color(0xff777777)),
+//           prefixIcon: const Icon(
+//             Icons.search,
+//             size: 17,
+//             color: Color(0xff777777),
+//           ),
+//           suffixIcon: controller.text.isEmpty
+//               ? null
+//               : GestureDetector(
+//                   onTap: onClear,
+//                   child: const Icon(
+//                     Icons.close,
+//                     size: 16,
+//                     color: Color(0xff777777),
+//                   ),
+//                 ),
 //           hintText: 'Search',
-//           hintStyle: TextStyle(fontSize: 12, color: Color(0xff777777)),
+//           hintStyle: const TextStyle(fontSize: 12, color: Color(0xff777777)),
 //           border: InputBorder.none,
-//           contentPadding: EdgeInsets.only(top: 11),
+//           contentPadding: const EdgeInsets.only(top: 11),
 //         ),
 //       ),
 //     );
@@ -538,23 +643,25 @@
 //   final String title;
 //   final String description;
 //   final String time;
-
+//   final VoidCallback onRefresh;
 //   const _ApiDiaryCard({
 //     required this.diary,
 //     required this.title,
 //     required this.description,
 //     required this.time,
+//     required this.onRefresh,
 //   });
 
 //   @override
 //   Widget build(BuildContext context) {
 //     final colors = _CardColors.fromDiaryId(diary.diaryId);
 //     final files = diary.files ?? [];
-
-//     final headerTitle = diary.diaryTypeName?.trim().isNotEmpty == true
-//         ? _capitalize(diary.diaryTypeName!)
+//     final String headerTitle = title.trim().isNotEmpty
+//         ? _capitalize(title.trim())
 //         : 'General';
-
+//     // final headerTitle = diary.diaryTitle?.trim().isNotEmpty == true
+//     //     ? _capitalize(diary.diaryTitle!.trim())
+//     //     : 'General';
 //     return ClipRRect(
 //       borderRadius: BorderRadius.circular(20),
 //       child: Container(
@@ -595,7 +702,24 @@
 //                     ),
 //                   ),
 
-//                   const _CircleActionButton(icon: Icons.edit_outlined),
+//                   _CircleActionButton(
+//                     icon: Icons.edit_outlined,
+//                     onTap: () async {
+//                       await Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (_) =>
+//                               CreateDiaryScreen(diaryId: diary.diaryId),
+//                         ),
+//                       );
+
+//                       if (!context.mounted) return;
+
+//                       // if (result == true) {
+//                       onRefresh();
+//                       // }
+//                     },
+//                   ),
 
 //                   const SizedBox(width: 8),
 
@@ -619,17 +743,16 @@
 //               child: Column(
 //                 crossAxisAlignment: CrossAxisAlignment.start,
 //                 children: [
-//                   if (title.isNotEmpty)
-//                     Text(
-//                       title,
-//                       style: const TextStyle(
-//                         fontSize: 12,
-//                         height: 1.45,
-//                         color: Color(0xff222222),
-//                         fontWeight: FontWeight.w500,
-//                       ),
-//                     ),
-
+//                   // if (title.isNotEmpty)
+//                   //   Text(
+//                   //     title,
+//                   //     style: const TextStyle(
+//                   //       fontSize: 12,
+//                   //       height: 1.45,
+//                   //       color: Color(0xff222222),
+//                   //       fontWeight: FontWeight.w500,
+//                   //     ),
+//                   //   ),
 //                   if (title.isNotEmpty && description.isNotEmpty)
 //                     const SizedBox(height: 5),
 
@@ -2126,6 +2249,10 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
   // has something to render the moment it opens.
   List<TutorshipClass> tutorshipClasses = [];
 
+  // Last list returned by the API. Kept so a state that is not a diary
+  // list state can never leave this screen blank.
+  List<DiaryEntity> _diaries = [];
+
   // Search state. Lives on the screen so the query survives list
   // rebuilds and pull-to-refresh.
   final TextEditingController _searchController = TextEditingController();
@@ -2159,6 +2286,11 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
   }
 
   void _fetchDiary() {
+    // May be called from a card that has already been rebuilt away.
+    if (!mounted) {
+      return;
+    }
+
     // Use the range picked in the drawer. When only "From" is chosen the
     // range collapses to that single day; with nothing chosen it stays
     // on today, exactly as before.
@@ -2405,7 +2537,22 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
 
                       Expanded(
                         child: BlocConsumer<DiaryCubit, DiaryState>(
+                          // Only diary list states may repaint this view.
+                          // The create screens share this cubit, and their
+                          // detail / save / update states would otherwise
+                          // rebuild this list into the empty branch and
+                          // unmount the cards.
+                          buildWhen: (previous, current) {
+                            return current is DiaryLoading ||
+                                current is DiaryFailure ||
+                                current is DiarySuccess;
+                          },
                           listener: (context, state) {
+                            if (state is DiarySuccess) {
+                              // Keep the last good list around.
+                              _diaries = state.response.data ?? [];
+                            }
+
                             if (state is DeleteDiarySuccess) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -2452,18 +2599,14 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
                               );
                             }
 
+                            // Falls back to the last loaded list instead of
+                            // an empty view.
                             return RefreshIndicator(
                               color: const Color(0xff9D75E8),
                               onRefresh: () async {
                                 _fetchDiary();
                               },
-                              child: ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: const [
-                                  SizedBox(height: 280),
-                                  Center(child: SizedBox()),
-                                ],
-                              ),
+                              child: _buildDiaryList(_diaries),
                             );
                           },
                         ),
@@ -2549,6 +2692,7 @@ class _DiaryTypeScreenState extends State<DiaryTypeScreen> {
             title: _removeHtml(diary.diaryTitle),
             description: _removeHtml(diary.description),
             time: _formatTime(diary.createdDate),
+            onRefresh: _fetchDiary,
           ),
         );
 
@@ -2729,12 +2873,13 @@ class _ApiDiaryCard extends StatelessWidget {
   final String title;
   final String description;
   final String time;
-
+  final VoidCallback onRefresh;
   const _ApiDiaryCard({
     required this.diary,
     required this.title,
     required this.description,
     required this.time,
+    required this.onRefresh,
   });
 
   @override
@@ -2787,7 +2932,24 @@ class _ApiDiaryCard extends StatelessWidget {
                     ),
                   ),
 
-                  const _CircleActionButton(icon: Icons.edit_outlined),
+                  _CircleActionButton(
+                    icon: Icons.edit_outlined,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              CreateDiaryScreen(diaryId: diary.diaryId),
+                        ),
+                      );
+
+                      // No context.mounted guard here: this card can be
+                      // rebuilt away while the create screen is open, and
+                      // the list still has to reload. _fetchDiary checks
+                      // its own State instead.
+                      onRefresh();
+                    },
+                  ),
 
                   const SizedBox(width: 8),
 
@@ -3587,6 +3749,31 @@ class _DiaryFilterDrawerState extends State<DiaryFilterDrawer> {
 
   List<TutorshipClass> tutorshipClasses = [];
 
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  //   // Start from the data the screen already fetched.
+  //   tutorshipClasses = widget.initialClasses;
+
+  //   selectedStandardId = widget.initialStandardId;
+  //   selectedDivisionId = widget.initialDivisionId;
+  //   selectedSubjectId = widget.initialSubjectId;
+
+  //   fromDate = widget.initialFromDate;
+  //   toDate = widget.initialToDate;
+
+  //   _restoreSelectionNames();
+
+  //   if (tutorshipClasses.isEmpty) {
+  //     // Only hits the API when the pre-fetch has not delivered yet.
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       _fetchTutorshipClasses();
+  //     });
+  //   } else if (selectedStandardId == null) {
+  //     _setInitialSelection(tutorshipClasses);
+  //   }
+  // }
   @override
   void initState() {
     super.initState();
@@ -3598,8 +3785,10 @@ class _DiaryFilterDrawerState extends State<DiaryFilterDrawer> {
     selectedDivisionId = widget.initialDivisionId;
     selectedSubjectId = widget.initialSubjectId;
 
-    fromDate = widget.initialFromDate;
-    toDate = widget.initialToDate;
+    // Nothing applied yet -> show today in both boxes, which is the range
+    // the list is already using.
+    fromDate = widget.initialFromDate ?? _today;
+    toDate = widget.initialToDate ?? _today;
 
     _restoreSelectionNames();
 
@@ -3611,6 +3800,12 @@ class _DiaryFilterDrawerState extends State<DiaryFilterDrawer> {
     } else if (selectedStandardId == null) {
       _setInitialSelection(tutorshipClasses);
     }
+  }
+
+  DateTime get _today {
+    final DateTime now = DateTime.now();
+
+    return DateTime(now.year, now.month, now.day);
   }
 
   /// Fills in the display names for the ids handed over by the screen.

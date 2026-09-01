@@ -7,7 +7,8 @@
 // import 'package:flutter_bloc/flutter_bloc.dart';
 
 // class CreateDiaryScreen extends StatefulWidget {
-//   const CreateDiaryScreen({super.key});
+//   final int? diaryId;
+//   const CreateDiaryScreen({super.key, this.diaryId});
 
 //   @override
 //   State<CreateDiaryScreen> createState() => _CreateDiaryScreenState();
@@ -21,70 +22,134 @@
 //   String? selectedStandard;
 //   String? selectedDivision;
 //   String? selectedSubject;
-//   String? selectedPriority;
 
 //   DateTime? diaryDate;
 //   DateTime? dueDate;
+
 //   bool isFavourite = false;
+
+//   // Complete tutorship class response.
 //   List<TutorshipClass> tutorshipClasses = [];
+//   // Standard list coming from data.Standard
+//   List<TutorshipClass> standardList = [];
+//   // Divisions belonging to the selected standard.
+//   List<DivisionDetails> divisions = [];
+
+//   // Subjects belonging to the selected division.
+//   List<SubjectDetails> subjects = [];
+
+//   /// Extracts all unique StandardId values from the
+//   /// tutorshipClasses array.
+//   List<int> get standardIds {
+//     final Set<int> ids = {};
+
+//     for (final TutorshipClass item in standardList) {
+//       final int? standardId = item.standardId;
+
+//       if (standardId != null) {
+//         ids.add(standardId);
+//       }
+//     }
+
+//     return ids.toList();
+//   }
 
 //   @override
 //   void initState() {
 //     super.initState();
+//     final DateTime today = DateTime.now();
+
+//     diaryDate = DateTime(today.year, today.month, today.day);
+
+//     dueDate = diaryDate!.add(const Duration(days: 1));
 
 //     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       if (!mounted) return;
+
 //       _fetchTutorshipClasses();
 //     });
 //   }
 
 //   void _fetchTutorshipClasses() {
-//     context.read<AuthenticationCubit>().fetchTutorshipClass(
-//       FetchTutorshipClassRequest(
-//         accyear: AppData.accYear,
-//         employeeId: AppData.employeeId,
-//         userId: AppData.userId,
-//       ),
+//     final request = FetchTutorshipClassRequest(
+//       accyear: AppData.accYear,
+//       employeeId: AppData.employeeId,
+//       userId: AppData.userId,
 //     );
+
+//     debugPrint('====================================');
+//     debugPrint('FETCH TUTORSHIP CLASSES');
+//     debugPrint('Request: ${request.toJson()}');
+//     debugPrint('====================================');
+
+//     context.read<AuthenticationCubit>().fetchTutorshipClass(request);
 //   }
 
-//   // All unique standards from the API.
-//   List<TutorshipClass> get standards {
-//     final Map<int, TutorshipClass> uniqueItems = {};
-
-//     for (final standard in tutorshipClasses) {
-//       final id = standard.standardId;
-
-//       if (id != null) {
-//         uniqueItems[id] = standard;
+//   TutorshipClass? _findStandard(int standardId) {
+//     for (final TutorshipClass item in standardList) {
+//       if (item.standardId == standardId) {
+//         return item;
 //       }
 //     }
 
-//     return uniqueItems.values.toList();
+//     return null;
 //   }
 
-//   List<DivisionDetails> divisions = [];
-//   List<SubjectDetails> subjects = [];
+//   DivisionDetails? _findDivision(int divisionId) {
+//     for (final DivisionDetails item in divisions) {
+//       if (item.divisionId == divisionId) {
+//         return item;
+//       }
+//     }
+
+//     return null;
+//   }
+
+//   SubjectDetails? _findSubject(int subjectId) {
+//     for (final SubjectDetails item in subjects) {
+//       if (item.subjectId == subjectId) {
+//         return item;
+//       }
+//     }
+
+//     return null;
+//   }
+
+//   String _standardName(int standardId) {
+//     final TutorshipClass? standard = _findStandard(standardId);
+
+//     if (standard == null ||
+//         standard.standard == null ||
+//         standard.standard!.trim().isEmpty) {
+//       return 'Standard $standardId';
+//     }
+
+//     return standard.standard!;
+//   }
 
 //   void _selectStandard(int? standardId) {
 //     if (standardId == null) return;
 
-//     final standard = tutorshipClasses.firstWhere(
-//       (e) => e.standardId == standardId,
-//     );
+//     final TutorshipClass? standard = _findStandard(standardId);
+
+//     if (standard == null) {
+//       _showMessage('Selected standard was not found');
+//       return;
+//     }
 
 //     setState(() {
 //       selectedStandardId = standard.standardId;
 //       selectedStandard = standard.standard;
 
-//       // Load only this standard's divisions
+//       // Read Division array inside the selected standard.
 //       divisions = standard.division ?? [];
 
-//       // Reset lower selections
+//       // Reset previous Division selection.
 //       selectedDivisionId = null;
 //       selectedDivision = null;
 
+//       // Reset Subject list and selection.
 //       subjects = [];
-
 //       selectedSubjectId = null;
 //       selectedSubject = null;
 //     });
@@ -93,15 +158,21 @@
 //   void _selectDivision(int? divisionId) {
 //     if (divisionId == null) return;
 
-//     final division = divisions.firstWhere((e) => e.divisionId == divisionId);
+//     final DivisionDetails? division = _findDivision(divisionId);
+
+//     if (division == null) {
+//       _showMessage('Selected division was not found');
+//       return;
+//     }
 
 //     setState(() {
 //       selectedDivisionId = division.divisionId;
 //       selectedDivision = division.division;
 
-//       // Load only this division's subjects
+//       // Read Subject array inside the selected division.
 //       subjects = division.subject ?? [];
 
+//       // Reset previous Subject selection.
 //       selectedSubjectId = null;
 //       selectedSubject = null;
 //     });
@@ -110,7 +181,12 @@
 //   void _selectSubject(int? subjectId) {
 //     if (subjectId == null) return;
 
-//     final subject = subjects.firstWhere((e) => e.subjectId == subjectId);
+//     final SubjectDetails? subject = _findSubject(subjectId);
+
+//     if (subject == null) {
+//       _showMessage('Selected subject was not found');
+//       return;
+//     }
 
 //     setState(() {
 //       selectedSubjectId = subject.subjectId;
@@ -128,30 +204,53 @@
 //       initialDate: initialDate,
 //       firstDate: DateTime(2020),
 //       lastDate: DateTime(2035),
+//       builder: (context, child) {
+//         return Theme(
+//           data: Theme.of(context).copyWith(
+//             colorScheme: const ColorScheme.light(
+//               primary: Color(0xff9D75E8),
+//               onPrimary: Colors.white,
+//               surface: Colors.white,
+//               onSurface: Colors.black,
+//             ),
+//           ),
+//           child: child!,
+//         );
+//       },
 //     );
 
 //     if (selectedDate == null || !mounted) {
 //       return;
 //     }
 
+//     final DateTime dateOnly = DateTime(
+//       selectedDate.year,
+//       selectedDate.month,
+//       selectedDate.day,
+//     );
+
 //     if (!isDiaryDate &&
 //         diaryDate != null &&
-//         selectedDate.isBefore(diaryDate!)) {
+//         dateOnly.isBefore(_dateOnly(diaryDate!))) {
 //       _showMessage('Due Date cannot be before Diary Date');
 //       return;
 //     }
 
 //     setState(() {
 //       if (isDiaryDate) {
-//         diaryDate = selectedDate;
+//         diaryDate = dateOnly;
 
-//         if (dueDate != null && dueDate!.isBefore(selectedDate)) {
+//         if (dueDate != null && _dateOnly(dueDate!).isBefore(dateOnly)) {
 //           dueDate = null;
 //         }
 //       } else {
-//         dueDate = selectedDate;
+//         dueDate = dateOnly;
 //       }
 //     });
+//   }
+
+//   DateTime _dateOnly(DateTime date) {
+//     return DateTime(date.year, date.month, date.day);
 //   }
 
 //   String formatDate(DateTime? date, String placeholder) {
@@ -160,32 +259,32 @@
 //     }
 
 //     final String day = date.day.toString().padLeft(2, '0');
-//     final String month = date.month.toString().padLeft(2, '0');
-//     final String year = date.year.toString();
 
-//     return '$day-$month-$year';
+//     final String month = date.month.toString().padLeft(2, '0');
+
+//     return '$day-$month-${date.year}';
 //   }
 
 //   String formatApiDate(DateTime date) {
-//     final String year = date.year.toString();
 //     final String month = date.month.toString().padLeft(2, '0');
+
 //     final String day = date.day.toString().padLeft(2, '0');
 
-//     return '$year-$month-$day';
+//     return '${date.year}-$month-$day';
 //   }
 
 //   void goNext() {
-//     if (selectedStandardId == null) {
+//     if (selectedStandardId == null || selectedStandard == null) {
 //       _showMessage('Please select Standard');
 //       return;
 //     }
 
-//     if (selectedDivisionId == null) {
+//     if (selectedDivisionId == null || selectedDivision == null) {
 //       _showMessage('Please select Division');
 //       return;
 //     }
 
-//     if (selectedSubjectId == null) {
+//     if (selectedSubjectId == null || selectedSubject == null) {
 //       _showMessage('Please select Subject');
 //       return;
 //     }
@@ -200,15 +299,23 @@
 //       return;
 //     }
 
-//     debugPrint('Standard: $selectedStandard ($selectedStandardId)');
-
-//     debugPrint('Division: $selectedDivision ($selectedDivisionId)');
-
-//     debugPrint('Subject: $selectedSubject ($selectedSubjectId)');
-
+//     debugPrint('====================================');
+//     debugPrint(
+//       'Standard: $selectedStandard '
+//       '($selectedStandardId)',
+//     );
+//     debugPrint(
+//       'Division: $selectedDivision '
+//       '($selectedDivisionId)',
+//     );
+//     debugPrint(
+//       'Subject: $selectedSubject '
+//       '($selectedSubjectId)',
+//     );
 //     debugPrint('Diary Date: ${formatApiDate(diaryDate!)}');
-
 //     debugPrint('Due Date: ${formatApiDate(dueDate!)}');
+//     debugPrint('Favourite: $isFavourite');
+//     debugPrint('====================================');
 
 //     Navigator.push(
 //       context,
@@ -229,6 +336,8 @@
 //   }
 
 //   void _showMessage(String message) {
+//     if (!mounted) return;
+
 //     ScaffoldMessenger.of(context)
 //       ..hideCurrentSnackBar()
 //       ..showSnackBar(
@@ -244,17 +353,22 @@
 //         child: Column(
 //           children: [
 //             const _TopBar(),
-
 //             Expanded(
 //               child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
 //                 listenWhen: (previous, current) {
-//                   return current is FetchTutorshipClassSuccess;
+//                   return current is FetchTutorshipClassSuccess ||
+//                       current is FetchTutorshipClassFailure;
 //                 },
 //                 listener: (context, state) {
 //                   if (state is FetchTutorshipClassSuccess) {
+//                     final List<TutorshipClass> responseTutorshipClasses =
+//                         state.response.data?.tutorshipClass ?? [];
+//                     final List<TutorshipClass> responseStandardList =
+//                         state.response.data?.standard ?? [];
+
 //                     setState(() {
-//                       tutorshipClasses =
-//                           state.response.data?.tutorshipClass ?? [];
+//                       tutorshipClasses = responseTutorshipClasses;
+//                       standardList = responseStandardList;
 
 //                       divisions = [];
 //                       subjects = [];
@@ -268,11 +382,20 @@
 //                       selectedSubjectId = null;
 //                       selectedSubject = null;
 //                     });
+
+//                     debugPrint('Tutorship Class: $tutorshipClasses');
+//                     debugPrint('Standard List: $standardList');
+//                     debugPrint('Standard ID array: $standardIds');
+//                   }
+
+//                   if (state is FetchTutorshipClassFailure &&
+//                       standardList.isNotEmpty) {
+//                     _showMessage(state.message);
 //                   }
 //                 },
 //                 builder: (context, state) {
 //                   if (state is FetchTutorshipClassLoading &&
-//                       tutorshipClasses.isEmpty) {
+//                       standardList.isEmpty) {
 //                     return const Center(
 //                       child: CircularProgressIndicator(
 //                         color: Color(0xff9D75E8),
@@ -281,19 +404,14 @@
 //                   }
 
 //                   if (state is FetchTutorshipClassFailure &&
-//                       tutorshipClasses.isEmpty) {
+//                       standardList.isEmpty) {
 //                     return _ApiErrorView(
 //                       message: state.message,
 //                       onRetry: _fetchTutorshipClasses,
 //                     );
 //                   }
 
-//                   if (state is FetchTutorshipClassSuccess) {
-//                     tutorshipClasses =
-//                         state.response.data?.tutorshipClass ?? [];
-//                   }
-
-//                   if (tutorshipClasses.isEmpty) {
+//                   if (standardList.isEmpty) {
 //                     return _ApiErrorView(
 //                       message: 'No class details found',
 //                       onRetry: _fetchTutorshipClasses,
@@ -316,13 +434,15 @@
 //       child: Column(
 //         crossAxisAlignment: CrossAxisAlignment.start,
 //         children: [
+//           // Standard dropdown uses StandardId values
+//           // extracted from tutorshipClasses.
 //           CustomDropdownField<int>(
 //             hint: 'Standard',
 //             value: selectedStandardId,
-//             items: standards.map((item) {
+//             items: standardIds.map((standardId) {
 //               return DropdownMenuItem<int>(
-//                 value: item.standardId,
-//                 child: Text(item.standard ?? ''),
+//                 value: standardId,
+//                 child: Text(_standardName(standardId)),
 //               );
 //             }).toList(),
 //             onChanged: _selectStandard,
@@ -330,30 +450,40 @@
 
 //           const SizedBox(height: 20),
 
+//           // Divisions belong only to the selected
+//           // StandardId.
 //           CustomDropdownField<int>(
-//             hint: 'Division',
+//             hint: selectedStandardId == null
+//                 ? 'Select Standard first'
+//                 : 'Division',
 //             value: selectedDivisionId,
-//             items: divisions.map((item) {
+//             items: divisions.where((item) => item.divisionId != null).map((
+//               item,
+//             ) {
 //               return DropdownMenuItem<int>(
 //                 value: item.divisionId,
 //                 child: Text(item.division ?? ''),
 //               );
 //             }).toList(),
-//             onChanged: _selectDivision,
+//             onChanged: selectedStandardId == null ? (_) {} : _selectDivision,
 //           ),
 
 //           const SizedBox(height: 20),
 
+//           // Subjects belong only to the selected
+//           // DivisionId.
 //           CustomDropdownField<int>(
-//             hint: 'Subject',
+//             hint: selectedDivisionId == null
+//                 ? 'Select Division first'
+//                 : 'Subject',
 //             value: selectedSubjectId,
-//             items: subjects.map((item) {
+//             items: subjects.where((item) => item.subjectId != null).map((item) {
 //               return DropdownMenuItem<int>(
 //                 value: item.subjectId,
 //                 child: Text(item.subject ?? ''),
 //               );
 //             }).toList(),
-//             onChanged: _selectSubject,
+//             onChanged: selectedDivisionId == null ? (_) {} : _selectSubject,
 //           ),
 
 //           const SizedBox(height: 26),
@@ -387,42 +517,53 @@
 
 //           const SizedBox(height: 28),
 
-//           Container(
-//             height: 58,
-//             padding: const EdgeInsets.symmetric(horizontal: 8),
-//             decoration: BoxDecoration(
-//               color: const Color(0xffEEF3FC),
-//               borderRadius: BorderRadius.circular(8),
-//               border: Border.all(color: const Color(0xff8B8B8B), width: 0.8),
-//             ),
-//             child: Row(
-//               children: [
-//                 Checkbox(
-//                   value: isFavourite,
-//                   activeColor: const Color(0xff9D75E8),
-//                   checkColor: Colors.white,
-//                   side: const BorderSide(color: Color(0xff5F6368), width: 1.5),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(3),
+//           InkWell(
+//             onTap: () {
+//               setState(() {
+//                 isFavourite = !isFavourite;
+//               });
+//             },
+//             borderRadius: BorderRadius.circular(8),
+//             child: Container(
+//               height: 58,
+//               padding: const EdgeInsets.symmetric(horizontal: 8),
+//               decoration: BoxDecoration(
+//                 color: const Color(0xffEEF3FC),
+//                 borderRadius: BorderRadius.circular(8),
+//                 border: Border.all(color: const Color(0xff8B8B8B), width: 0.8),
+//               ),
+//               child: Row(
+//                 children: [
+//                   Checkbox(
+//                     value: isFavourite,
+//                     activeColor: const Color(0xff9D75E8),
+//                     checkColor: Colors.white,
+//                     side: const BorderSide(
+//                       color: Color(0xff5F6368),
+//                       width: 1.5,
+//                     ),
+//                     shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(3),
+//                     ),
+//                     onChanged: (value) {
+//                       setState(() {
+//                         isFavourite = value ?? false;
+//                       });
+//                     },
 //                   ),
-//                   onChanged: (value) {
-//                     setState(() {
-//                       isFavourite = value ?? false;
-//                     });
-//                   },
-//                 ),
-//                 const SizedBox(width: 2),
-//                 const Expanded(
-//                   child: Text(
-//                     'Is Favourite',
-//                     style: TextStyle(
-//                       fontSize: 13,
-//                       fontWeight: FontWeight.w600,
-//                       color: Colors.black,
+//                   const SizedBox(width: 2),
+//                   const Expanded(
+//                     child: Text(
+//                       'Is Favourite',
+//                       style: TextStyle(
+//                         fontSize: 13,
+//                         fontWeight: FontWeight.w600,
+//                         color: Colors.black,
+//                       ),
 //                     ),
 //                   ),
-//                 ),
-//               ],
+//                 ],
+//               ),
 //             ),
 //           ),
 
@@ -470,7 +611,6 @@
 //             },
 //             child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
 //           ),
-
 //           const Expanded(
 //             child: Center(
 //               child: Text(
@@ -483,7 +623,6 @@
 //               ),
 //             ),
 //           ),
-
 //           const SizedBox(width: 24),
 //         ],
 //       ),
@@ -508,7 +647,8 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     final bool hasValidValue =
-//         value == null || items.any((item) => item.value == value);
+//         value == null ||
+//         items.any((DropdownMenuItem<T> item) => item.value == value);
 
 //     return Container(
 //       height: 58,
@@ -580,7 +720,6 @@
 //                 ),
 //               ),
 //             ),
-
 //             const Icon(
 //               Icons.calendar_month,
 //               size: 22,
@@ -612,9 +751,7 @@
 //               textAlign: TextAlign.center,
 //               style: const TextStyle(fontSize: 13, color: Colors.red),
 //             ),
-
 //             const SizedBox(height: 12),
-
 //             TextButton(
 //               onPressed: onRetry,
 //               child: const Text(
@@ -630,14 +767,41 @@
 // }
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
-import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
-import 'package:cristalteacher/features/authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
 import 'package:cristalteacher/features/diary/presentation/screens/creatediarydetails_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// Values taken from the diary being edited. Keeps the response entity type
+/// confined to the listener, so nothing else has to know about it.
+class _EditingDiary {
+  final int? standardId;
+  final int? divisionId;
+  final int? subjectId;
+  final String? diaryTitle;
+  final String? description;
+  final String? diaryDate;
+  final String? dueDate;
+  final bool? isFavourite;
+  final List<String> files;
+
+  const _EditingDiary({
+    required this.standardId,
+    required this.divisionId,
+    required this.subjectId,
+    required this.diaryTitle,
+    required this.description,
+    required this.diaryDate,
+    required this.dueDate,
+    required this.isFavourite,
+    required this.files,
+  });
+}
+
 class CreateDiaryScreen extends StatefulWidget {
-  const CreateDiaryScreen({super.key});
+  final int? diaryId;
+
+  const CreateDiaryScreen({super.key, this.diaryId});
 
   @override
   State<CreateDiaryScreen> createState() => _CreateDiaryScreenState();
@@ -657,18 +821,21 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
 
   bool isFavourite = false;
 
-  // Complete tutorship class response.
   List<TutorshipClass> tutorshipClasses = [];
-  // Standard list coming from data.Standard
   List<TutorshipClass> standardList = [];
-  // Divisions belonging to the selected standard.
   List<DivisionDetails> divisions = [];
-
-  // Subjects belonging to the selected division.
   List<SubjectDetails> subjects = [];
 
-  /// Extracts all unique StandardId values from the
-  /// tutorshipClasses array.
+  /// Diary loaded for editing. Also carries the title, description and
+  /// existing attachments over to the details screen.
+  _EditingDiary? _editingDiary;
+
+  /// True while fetchDiaryUpdateListing is in flight, so the form is not
+  /// shown with the default (wrong) selection first.
+  bool _isLoadingDiary = false;
+
+  bool get isEditMode => widget.diaryId != null;
+
   List<int> get standardIds {
     final Set<int> ids = {};
 
@@ -686,32 +853,251 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
   @override
   void initState() {
     super.initState();
+
     final DateTime today = DateTime.now();
 
     diaryDate = DateTime(today.year, today.month, today.day);
 
     dueDate = diaryDate!.add(const Duration(days: 1));
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+    // Load and automatically select Standard,
+    // Division and Subject from AppData.
+    _loadInitialClassData();
 
-      _fetchTutorshipClasses();
-    });
+    // Edit flow. The class data above is already in memory, so the diary
+    // can be applied the moment the API answers.
+    if (isEditMode) {
+      _isLoadingDiary = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        _fetchDiaryForEdit();
+      });
+    }
   }
 
-  void _fetchTutorshipClasses() {
-    final request = FetchTutorshipClassRequest(
-      accyear: AppData.accYear,
-      employeeId: AppData.employeeId,
-      userId: AppData.userId,
+  void _fetchDiaryForEdit() {
+    debugPrint('====================================');
+    debugPrint('OPENING DIARY FOR EDIT');
+    debugPrint('Diary ID: ${widget.diaryId}');
+    debugPrint('====================================');
+
+    context.read<DiaryCubit>().fetchDiaryUpdateListing(widget.diaryId!);
+  }
+
+  void _loadInitialClassData() {
+    tutorshipClasses = List<TutorshipClass>.from(AppData.tutorshipClasses);
+
+    standardList = List<TutorshipClass>.from(
+      AppData.standards.isNotEmpty
+          ? AppData.standards
+          : AppData.tutorshipClasses,
     );
 
-    debugPrint('====================================');
-    debugPrint('FETCH TUTORSHIP CLASSES');
-    debugPrint('Request: ${request.toJson()}');
-    debugPrint('====================================');
+    if (tutorshipClasses.isEmpty && standardList.isEmpty) {
+      debugPrint('====================================');
+      debugPrint('NO CLASS DATA FOUND IN APPDATA');
+      debugPrint('====================================');
+      return;
+    }
 
-    context.read<AuthenticationCubit>().fetchTutorshipClass(request);
+    /*
+     * Prefer the first Tutorship Class because it normally
+     * contains the teacher's assigned Standard and Division.
+     *
+     * If Tutorship Class is empty, use the first item from
+     * the complete Standard list.
+     */
+    final TutorshipClass initialTutorship = tutorshipClasses.isNotEmpty
+        ? tutorshipClasses.first
+        : standardList.first;
+
+    final int? initialStandardId = initialTutorship.standardId;
+
+    if (initialStandardId == null) {
+      debugPrint('Initial Standard ID is null');
+      return;
+    }
+
+    TutorshipClass? initialStandard;
+
+    for (final TutorshipClass item in standardList) {
+      if (item.standardId == initialStandardId) {
+        initialStandard = item;
+        break;
+      }
+    }
+
+    initialStandard ??= initialTutorship;
+
+    selectedStandardId = initialStandard.standardId;
+
+    selectedStandard = initialStandard.standard?.trim();
+
+    // Load Divisions from the matching Standard.
+    divisions = _divisionsFor(initialStandard);
+
+    if (divisions.isNotEmpty) {
+      final DivisionDetails initialDivision = divisions.first;
+
+      selectedDivisionId = initialDivision.divisionId;
+
+      selectedDivision = initialDivision.division?.trim();
+
+      subjects = List<SubjectDetails>.from(initialDivision.subject ?? []);
+
+      if (subjects.isNotEmpty) {
+        final SubjectDetails initialSubject = subjects.first;
+
+        selectedSubjectId = initialSubject.subjectId;
+
+        selectedSubject = initialSubject.subject?.trim();
+      }
+    }
+
+    debugPrint('====================================');
+    debugPrint('INITIAL CLASS VALUES FROM APPDATA');
+    debugPrint(
+      'Standard: $selectedStandard '
+      '($selectedStandardId)',
+    );
+    debugPrint(
+      'Division: $selectedDivision '
+      '($selectedDivisionId)',
+    );
+    debugPrint(
+      'Subject: $selectedSubject '
+      '($selectedSubjectId)',
+    );
+    debugPrint('====================================');
+  }
+
+  /// Divisions of [standard]. The complete Standard list often carries no
+  /// divisions, so it falls back to the Tutorship Class with the same id.
+  List<DivisionDetails> _divisionsFor(TutorshipClass standard) {
+    final List<DivisionDetails> own = List<DivisionDetails>.from(
+      standard.division ?? [],
+    );
+
+    if (own.isNotEmpty) {
+      return own;
+    }
+
+    for (final TutorshipClass item in tutorshipClasses) {
+      if (item.standardId == standard.standardId) {
+        return List<DivisionDetails>.from(item.division ?? []);
+      }
+    }
+
+    return [];
+  }
+
+  /// Puts the fetched diary onto the form. Falls back to the first
+  /// available option at each level when the saved id is no longer
+  /// present, so the form is never left in a half-selected state.
+  void _applyEditPrefill(_EditingDiary diary) {
+    final int? diaryStandardId = diary.standardId;
+
+    TutorshipClass? standard;
+
+    if (diaryStandardId != null) {
+      standard = _findStandard(diaryStandardId);
+
+      // The complete Standard list may not hold this class — try the
+      // teacher's own tutorship classes as well.
+      if (standard == null) {
+        for (final TutorshipClass item in tutorshipClasses) {
+          if (item.standardId == diaryStandardId) {
+            standard = item;
+            break;
+          }
+        }
+      }
+    }
+
+    if (standard == null) {
+      debugPrint('EDIT PREFILL: standard ${diary.standardId} not found');
+
+      _showMessage('This diary belongs to a class that is not assigned to you');
+
+      // Dates and favourite are still worth restoring.
+      setState(() {
+        diaryDate = DateTime.tryParse(diary.diaryDate ?? '') ?? diaryDate;
+        dueDate = DateTime.tryParse(diary.dueDate ?? '') ?? dueDate;
+        isFavourite = diary.isFavourite ?? false;
+      });
+
+      return;
+    }
+
+    final List<DivisionDetails> newDivisions = _divisionsFor(standard);
+
+    DivisionDetails? division;
+
+    for (final DivisionDetails item in newDivisions) {
+      if (item.divisionId == diary.divisionId) {
+        division = item;
+        break;
+      }
+    }
+
+    division ??= newDivisions.isNotEmpty ? newDivisions.first : null;
+
+    final List<SubjectDetails> newSubjects = List<SubjectDetails>.from(
+      division?.subject ?? [],
+    );
+
+    SubjectDetails? subject;
+
+    for (final SubjectDetails item in newSubjects) {
+      if (item.subjectId == diary.subjectId) {
+        subject = item;
+        break;
+      }
+    }
+
+    subject ??= newSubjects.isNotEmpty ? newSubjects.first : null;
+
+    setState(() {
+      selectedStandardId = standard!.standardId;
+      selectedStandard = standard.standard?.trim();
+
+      divisions = newDivisions;
+
+      selectedDivisionId = division?.divisionId;
+      selectedDivision = division?.division?.trim();
+
+      subjects = newSubjects;
+
+      selectedSubjectId = subject?.subjectId;
+      selectedSubject = subject?.subject?.trim();
+
+      diaryDate = DateTime.tryParse(diary.diaryDate ?? '') ?? diaryDate;
+      dueDate = DateTime.tryParse(diary.dueDate ?? '') ?? dueDate;
+
+      isFavourite = diary.isFavourite ?? false;
+    });
+
+    debugPrint('====================================');
+    debugPrint('EDIT PREFILL APPLIED');
+    debugPrint(
+      'Standard: $selectedStandard '
+      '($selectedStandardId)',
+    );
+    debugPrint(
+      'Division: $selectedDivision '
+      '($selectedDivisionId)',
+    );
+    debugPrint(
+      'Subject: $selectedSubject '
+      '($selectedSubjectId)',
+    );
+    debugPrint('Diary Date: $diaryDate');
+    debugPrint('Due Date  : $dueDate');
+    debugPrint('Favourite : $isFavourite');
+    debugPrint('Files     : ${diary.files.length}');
+    debugPrint('====================================');
   }
 
   TutorshipClass? _findStandard(int standardId) {
@@ -747,13 +1133,13 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
   String _standardName(int standardId) {
     final TutorshipClass? standard = _findStandard(standardId);
 
-    if (standard == null ||
-        standard.standard == null ||
-        standard.standard!.trim().isEmpty) {
+    final String name = standard?.standard?.trim() ?? '';
+
+    if (name.isEmpty) {
       return 'Standard $standardId';
     }
 
-    return standard.standard!;
+    return name;
   }
 
   void _selectStandard(int? standardId) {
@@ -766,22 +1152,67 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
       return;
     }
 
+    final List<DivisionDetails> newDivisions = _divisionsFor(standard);
+
+    int? newDivisionId;
+    String? newDivisionName;
+
+    List<SubjectDetails> newSubjects = [];
+
+    int? newSubjectId;
+    String? newSubjectName;
+
+    /*
+     * Automatically select the first Division and Subject
+     * whenever the Standard changes.
+     */
+    if (newDivisions.isNotEmpty) {
+      final DivisionDetails firstDivision = newDivisions.first;
+
+      newDivisionId = firstDivision.divisionId;
+      newDivisionName = firstDivision.division?.trim();
+
+      newSubjects = List<SubjectDetails>.from(firstDivision.subject ?? []);
+
+      if (newSubjects.isNotEmpty) {
+        final SubjectDetails firstSubject = newSubjects.first;
+
+        newSubjectId = firstSubject.subjectId;
+        newSubjectName = firstSubject.subject?.trim();
+      }
+    }
+
     setState(() {
       selectedStandardId = standard.standardId;
-      selectedStandard = standard.standard;
 
-      // Read Division array inside the selected standard.
-      divisions = standard.division ?? [];
+      selectedStandard = standard.standard?.trim();
 
-      // Reset previous Division selection.
-      selectedDivisionId = null;
-      selectedDivision = null;
+      divisions = newDivisions;
 
-      // Reset Subject list and selection.
-      subjects = [];
-      selectedSubjectId = null;
-      selectedSubject = null;
+      selectedDivisionId = newDivisionId;
+      selectedDivision = newDivisionName;
+
+      subjects = newSubjects;
+
+      selectedSubjectId = newSubjectId;
+      selectedSubject = newSubjectName;
     });
+
+    debugPrint('====================================');
+    debugPrint('STANDARD CHANGED');
+    debugPrint(
+      'Standard: $selectedStandard '
+      '($selectedStandardId)',
+    );
+    debugPrint(
+      'Division: $selectedDivision '
+      '($selectedDivisionId)',
+    );
+    debugPrint(
+      'Subject: $selectedSubject '
+      '($selectedSubjectId)',
+    );
+    debugPrint('====================================');
   }
 
   void _selectDivision(int? divisionId) {
@@ -794,17 +1225,46 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
       return;
     }
 
+    final List<SubjectDetails> newSubjects = List<SubjectDetails>.from(
+      division.subject ?? [],
+    );
+
+    int? newSubjectId;
+    String? newSubjectName;
+
+    /*
+     * Automatically select the first Subject whenever
+     * the Division changes.
+     */
+    if (newSubjects.isNotEmpty) {
+      final SubjectDetails firstSubject = newSubjects.first;
+
+      newSubjectId = firstSubject.subjectId;
+      newSubjectName = firstSubject.subject?.trim();
+    }
+
     setState(() {
       selectedDivisionId = division.divisionId;
-      selectedDivision = division.division;
 
-      // Read Subject array inside the selected division.
-      subjects = division.subject ?? [];
+      selectedDivision = division.division?.trim();
 
-      // Reset previous Subject selection.
-      selectedSubjectId = null;
-      selectedSubject = null;
+      subjects = newSubjects;
+
+      selectedSubjectId = newSubjectId;
+      selectedSubject = newSubjectName;
     });
+
+    debugPrint('====================================');
+    debugPrint('DIVISION CHANGED');
+    debugPrint(
+      'Division: $selectedDivision '
+      '($selectedDivisionId)',
+    );
+    debugPrint(
+      'Subject: $selectedSubject '
+      '($selectedSubjectId)',
+    );
+    debugPrint('====================================');
   }
 
   void _selectSubject(int? subjectId) {
@@ -819,8 +1279,17 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
 
     setState(() {
       selectedSubjectId = subject.subjectId;
-      selectedSubject = subject.subject;
+
+      selectedSubject = subject.subject?.trim();
     });
+
+    debugPrint('====================================');
+    debugPrint('SUBJECT CHANGED');
+    debugPrint(
+      'Subject: $selectedSubject '
+      '($selectedSubjectId)',
+    );
+    debugPrint('====================================');
   }
 
   Future<void> pickDate({required bool isDiaryDate}) async {
@@ -852,7 +1321,7 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
       return;
     }
 
-    final DateTime dateOnly = DateTime(
+    final DateTime selectedDateOnly = DateTime(
       selectedDate.year,
       selectedDate.month,
       selectedDate.day,
@@ -860,20 +1329,19 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
 
     if (!isDiaryDate &&
         diaryDate != null &&
-        dateOnly.isBefore(_dateOnly(diaryDate!))) {
+        selectedDateOnly.isBefore(_dateOnly(diaryDate!))) {
       _showMessage('Due Date cannot be before Diary Date');
       return;
     }
 
     setState(() {
       if (isDiaryDate) {
-        diaryDate = dateOnly;
+        diaryDate = selectedDateOnly;
 
-        if (dueDate != null && _dateOnly(dueDate!).isBefore(dateOnly)) {
-          dueDate = null;
-        }
+        // Automatically set Due Date to the next day.
+        dueDate = selectedDateOnly.add(const Duration(days: 1));
       } else {
-        dueDate = dateOnly;
+        dueDate = selectedDateOnly;
       }
     });
   }
@@ -903,17 +1371,23 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
   }
 
   void goNext() {
-    if (selectedStandardId == null || selectedStandard == null) {
+    if (selectedStandardId == null ||
+        selectedStandard == null ||
+        selectedStandard!.isEmpty) {
       _showMessage('Please select Standard');
       return;
     }
 
-    if (selectedDivisionId == null || selectedDivision == null) {
+    if (selectedDivisionId == null ||
+        selectedDivision == null ||
+        selectedDivision!.isEmpty) {
       _showMessage('Please select Division');
       return;
     }
 
-    if (selectedSubjectId == null || selectedSubject == null) {
+    if (selectedSubjectId == null ||
+        selectedSubject == null ||
+        selectedSubject!.isEmpty) {
       _showMessage('Please select Subject');
       return;
     }
@@ -929,6 +1403,7 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
     }
 
     debugPrint('====================================');
+    debugPrint(isEditMode ? 'EDIT DIARY VALUES' : 'CREATE DIARY VALUES');
     debugPrint(
       'Standard: $selectedStandard '
       '($selectedStandardId)',
@@ -941,15 +1416,23 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
       'Subject: $selectedSubject '
       '($selectedSubjectId)',
     );
-    debugPrint('Diary Date: ${formatApiDate(diaryDate!)}');
-    debugPrint('Due Date: ${formatApiDate(dueDate!)}');
+    debugPrint(
+      'Diary Date: '
+      '${formatApiDate(diaryDate!)}',
+    );
+    debugPrint(
+      'Due Date: '
+      '${formatApiDate(dueDate!)}',
+    );
     debugPrint('Favourite: $isFavourite');
+    debugPrint('Diary ID: ${widget.diaryId}');
     debugPrint('====================================');
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => SelectYourClassScreen(
+          diaryId: widget.diaryId,
           standardId: selectedStandardId!,
           standardName: selectedStandard!,
           divisionId: selectedDivisionId!,
@@ -959,6 +1442,12 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
           diaryDate: diaryDate!,
           dueDate: dueDate!,
           isFavourite: isFavourite,
+
+          // Carried from the diary fetched here, so the details screen
+          // never has to call the API itself.
+          initialTitle: _editingDiary?.diaryTitle ?? '',
+          initialDescription: _editingDiary?.description ?? '',
+          existingFiles: _editingDiary?.files ?? const <String>[],
         ),
       ),
     );
@@ -979,79 +1468,64 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
     return Scaffold(
       backgroundColor: const Color(0xffFCF8FF),
       body: SafeArea(
-        child: Column(
-          children: [
-            const _TopBar(),
-            Expanded(
-              child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
-                listenWhen: (previous, current) {
-                  return current is FetchTutorshipClassSuccess ||
-                      current is FetchTutorshipClassFailure;
-                },
-                listener: (context, state) {
-                  if (state is FetchTutorshipClassSuccess) {
-                    final List<TutorshipClass> responseTutorshipClasses =
-                        state.response.data?.tutorshipClass ?? [];
-                    final List<TutorshipClass> responseStandardList =
-                        state.response.data?.standard ?? [];
+        child: BlocListener<DiaryCubit, DiaryState>(
+          listenWhen: (previous, current) {
+            return current is FetchDiaryUpdateListingSuccess ||
+                current is FetchDiaryUpdateListingFailure;
+          },
+          listener: (context, state) {
+            if (state is FetchDiaryUpdateListingSuccess) {
+              // The only place that touches the response entity type.
+              final data = state.response.data;
 
-                    setState(() {
-                      tutorshipClasses = responseTutorshipClasses;
-                      standardList = responseStandardList;
+              setState(() {
+                _isLoadingDiary = false;
+              });
 
-                      divisions = [];
-                      subjects = [];
+              if (data == null) {
+                _showMessage('Diary details are not available');
+                return;
+              }
 
-                      selectedStandardId = null;
-                      selectedStandard = null;
+              _editingDiary = _EditingDiary(
+                standardId: data.standardId,
+                divisionId: data.divisionId,
+                subjectId: data.subjectId,
+                diaryTitle: data.diaryTitle,
+                description: data.description,
+                diaryDate: data.diaryDate,
+                dueDate: data.dueDate,
+                isFavourite: data.isFavourite,
+                files: List<String>.from(data.files ?? const []),
+              );
 
-                      selectedDivisionId = null;
-                      selectedDivision = null;
+              _applyEditPrefill(_editingDiary!);
+            }
 
-                      selectedSubjectId = null;
-                      selectedSubject = null;
-                    });
+            if (state is FetchDiaryUpdateListingFailure) {
+              setState(() {
+                _isLoadingDiary = false;
+              });
 
-                    debugPrint('Tutorship Class: $tutorshipClasses');
-                    debugPrint('Standard List: $standardList');
-                    debugPrint('Standard ID array: $standardIds');
-                  }
-
-                  if (state is FetchTutorshipClassFailure &&
-                      standardList.isNotEmpty) {
-                    _showMessage(state.message);
-                  }
-                },
-                builder: (context, state) {
-                  if (state is FetchTutorshipClassLoading &&
-                      standardList.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xff9D75E8),
-                      ),
-                    );
-                  }
-
-                  if (state is FetchTutorshipClassFailure &&
-                      standardList.isEmpty) {
-                    return _ApiErrorView(
-                      message: state.message,
-                      onRetry: _fetchTutorshipClasses,
-                    );
-                  }
-
-                  if (standardList.isEmpty) {
-                    return _ApiErrorView(
-                      message: 'No class details found',
-                      onRetry: _fetchTutorshipClasses,
-                    );
-                  }
-
-                  return _buildForm();
-                },
+              _showMessage(state.message);
+            }
+          },
+          child: Column(
+            children: [
+              _TopBar(isEditMode: isEditMode),
+              Expanded(
+                child: standardList.isEmpty
+                    ? const _NoClassDataView()
+                    : _isLoadingDiary
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xff9D75E8),
+                        ),
+                      )
+                    : _buildForm(),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1063,12 +1537,10 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Standard dropdown uses StandardId values
-          // extracted from tutorshipClasses.
           CustomDropdownField<int>(
             hint: 'Standard',
             value: selectedStandardId,
-            items: standardIds.map((standardId) {
+            items: standardIds.map((int standardId) {
               return DropdownMenuItem<int>(
                 value: standardId,
                 child: Text(_standardName(standardId)),
@@ -1076,47 +1548,37 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
             }).toList(),
             onChanged: _selectStandard,
           ),
-
           const SizedBox(height: 20),
-
-          // Divisions belong only to the selected
-          // StandardId.
           CustomDropdownField<int>(
-            hint: selectedStandardId == null
-                ? 'Select Standard first'
-                : 'Division',
+            hint: 'Division',
             value: selectedDivisionId,
-            items: divisions.where((item) => item.divisionId != null).map((
-              item,
-            ) {
-              return DropdownMenuItem<int>(
-                value: item.divisionId,
-                child: Text(item.division ?? ''),
-              );
-            }).toList(),
-            onChanged: selectedStandardId == null ? (_) {} : _selectDivision,
+            items: divisions
+                .where((DivisionDetails item) => item.divisionId != null)
+                .map((DivisionDetails item) {
+                  return DropdownMenuItem<int>(
+                    value: item.divisionId,
+                    child: Text(item.division ?? ''),
+                  );
+                })
+                .toList(),
+            onChanged: selectedStandardId == null ? null : _selectDivision,
           ),
-
           const SizedBox(height: 20),
-
-          // Subjects belong only to the selected
-          // DivisionId.
           CustomDropdownField<int>(
-            hint: selectedDivisionId == null
-                ? 'Select Division first'
-                : 'Subject',
+            hint: 'Subject',
             value: selectedSubjectId,
-            items: subjects.where((item) => item.subjectId != null).map((item) {
-              return DropdownMenuItem<int>(
-                value: item.subjectId,
-                child: Text(item.subject ?? ''),
-              );
-            }).toList(),
-            onChanged: selectedDivisionId == null ? (_) {} : _selectSubject,
+            items: subjects
+                .where((SubjectDetails item) => item.subjectId != null)
+                .map((SubjectDetails item) {
+                  return DropdownMenuItem<int>(
+                    value: item.subjectId,
+                    child: Text(item.subject ?? ''),
+                  );
+                })
+                .toList(),
+            onChanged: selectedDivisionId == null ? null : _selectSubject,
           ),
-
           const SizedBox(height: 26),
-
           const Text(
             'Expiry Date',
             style: TextStyle(
@@ -1125,27 +1587,21 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
               color: Colors.black,
             ),
           ),
-
           const SizedBox(height: 14),
-
           CustomDateField(
             text: formatDate(diaryDate, 'Diary Date'),
             onTap: () {
               pickDate(isDiaryDate: true);
             },
           ),
-
           const SizedBox(height: 20),
-
           CustomDateField(
             text: formatDate(dueDate, 'Due Date'),
             onTap: () {
               pickDate(isDiaryDate: false);
             },
           ),
-
           const SizedBox(height: 28),
-
           InkWell(
             onTap: () {
               setState(() {
@@ -1174,7 +1630,7 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(3),
                     ),
-                    onChanged: (value) {
+                    onChanged: (bool? value) {
                       setState(() {
                         isFavourite = value ?? false;
                       });
@@ -1195,9 +1651,7 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 112),
-
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -1224,7 +1678,9 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar();
+  final bool isEditMode;
+
+  const _TopBar({required this.isEditMode});
 
   @override
   Widget build(BuildContext context) {
@@ -1240,11 +1696,11 @@ class _TopBar extends StatelessWidget {
             },
             child: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
-                'Create Diary',
-                style: TextStyle(
+                isEditMode ? 'Edit Diary' : 'Create Diary',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: Color(0xff222222),
@@ -1263,7 +1719,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final String hint;
   final T? value;
   final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?> onChanged;
+  final ValueChanged<T?>? onChanged;
 
   const CustomDropdownField({
     super.key,
@@ -1293,17 +1749,17 @@ class CustomDropdownField<T> extends StatelessWidget {
           items: items,
           onChanged: onChanged,
           isExpanded: true,
-          icon: const Icon(
+          icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: Color(0xff5F6368),
+            color: onChanged == null ? Colors.grey : const Color(0xff5F6368),
             size: 24,
           ),
           hint: Text(
             hint,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.black,
+              color: onChanged == null ? Colors.grey : Colors.black,
             ),
           ),
           style: const TextStyle(
@@ -1361,34 +1817,18 @@ class CustomDateField extends StatelessWidget {
   }
 }
 
-class _ApiErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ApiErrorView({required this.message, required this.onRetry});
+class _NoClassDataView extends StatelessWidget {
+  const _NoClassDataView();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: Colors.red),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: onRetry,
-              child: const Text(
-                'Retry',
-                style: TextStyle(color: Color(0xff9D75E8)),
-              ),
-            ),
-          ],
+        padding: EdgeInsets.all(24),
+        child: Text(
+          'Class data is not available',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, color: Colors.red),
         ),
       ),
     );

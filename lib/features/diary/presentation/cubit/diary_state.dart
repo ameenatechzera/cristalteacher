@@ -50,3 +50,33 @@ class DeleteDiaryFailure extends DiaryState {
 
   const DeleteDiaryFailure(this.message);
 }
+
+final class FetchDiaryUpdateListingLoading extends DiaryState {
+  const FetchDiaryUpdateListingLoading();
+}
+
+final class FetchDiaryUpdateListingSuccess extends DiaryState {
+  final DiaryUpdateListingEntity response;
+
+  const FetchDiaryUpdateListingSuccess(this.response);
+}
+
+final class FetchDiaryUpdateListingFailure extends DiaryState {
+  final String message;
+
+  const FetchDiaryUpdateListingFailure(this.message);
+}
+
+class UpdateDiaryLoading extends DiaryState {}
+
+class UpdateDiarySuccess extends DiaryState {
+  final MasterResponseModel response;
+
+  const UpdateDiarySuccess(this.response);
+}
+
+class UpdateDiaryFailure extends DiaryState {
+  final String message;
+
+  const UpdateDiaryFailure(this.message);
+}
