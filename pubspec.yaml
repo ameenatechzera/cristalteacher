@@ -44,6 +44,7 @@ dependencies:
   intl: ^0.20.2
   record: ^6.1.2 
   audioplayers: ^6.5.1
+  fluttertoast: ^8.2.4
 
 
 

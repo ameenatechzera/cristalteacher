@@ -1,4 +1,5 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
+import 'package:cristalteacher/core/functions/functions.dart';
 import 'package:cristalteacher/features/attendance/presentation/screens/attendance_report_screen.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
@@ -31,7 +32,19 @@ class _TeacherDashboardNewPageState extends State<TeacherDashboardNewPage> {
   void initState() {
     AppData.teacherSubject = '';
     _loadInitialData();
+    DailyTaskRunner.runOncePerDay(() async {
+      // your function here
+      print('Running once per day!');
+      context.read<AuthenticationCubit>().fetchTeacherDashboard(
+        TeacherDashboardRequest(
+          accYear: AppData.accYear!,
+          employeeId: AppData.employeeId!,
+          branchId: 1,
+        ),
+      );
+    });
     super.initState();
+
   }
 
   @override
@@ -863,48 +876,145 @@ class _QuickAccessItem extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => MaterialsScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Feed') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => FeedScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              print('feed back');
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Diary') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => DiaryTypeScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Attendance') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => AttendanceReportScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Exam') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => ExamScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Time Table') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => TimeTableScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Gate Pass') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => GatePassScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
             if (label == 'Work Plan') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => WorkplanDetialsScreen()),
               );
+              if (!context.mounted) return; // ✅ works in StatelessWidget too
+              DailyTaskRunner.runOncePerDay(() async {
+                // your function here
+                print('Running once per day!');
+                context.read<AuthenticationCubit>().fetchTeacherDashboard(
+                  TeacherDashboardRequest(
+                    accYear: AppData.accYear!,
+                    employeeId: AppData.employeeId!,
+                    branchId: 1,
+                  ),
+                );
+              });
             }
           },
           child: Container(

@@ -75,6 +75,7 @@ class _ExamScreenState extends State<ExamScreen> {
       standardId: selectedStandardId,
       fromDate: selectedFromDate,
       toDate: selectedToDate,
+      employeeId: AppData.employeeId
     );
 
     debugPrint('==========================================');
