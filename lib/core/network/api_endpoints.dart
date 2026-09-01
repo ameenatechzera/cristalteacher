@@ -125,8 +125,19 @@ class ApiConstants {
   static String saveWorkPlanPath(String baseUrl) {
     return '${baseUrl}save-staffworkplandetails';
   }
+
   /// Returns Teacher Dashboard
   static String getTeacherDashboardPath(String baseUrl) {
     return '${baseUrl}teacher-dashboard';
+  }
+
+  /// Returns update diarylisitng
+  static String getDiaryUpdateListingPath(String baseUrl) {
+    return '${baseUrl}get-classdiary';
+  }
+
+  /// Returns update diary
+  static String getUpdateDiaryPath(String baseUrl) {
+    return '${baseUrl}update-classdiary';
   }
 }

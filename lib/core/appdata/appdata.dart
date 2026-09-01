@@ -1,3 +1,4 @@
+import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 import 'package:flutter/material.dart';
 
 class AppData {
@@ -24,6 +25,39 @@ class AppData {
   static int? employeeId;
   static int? userId;
   static String? teacherName;
-  static String? teacherSubject;
+  static String?
+  teacherSubject; // Tutorship data of the currently logged-in teacher.
+  static List<TutorshipClass> tutorshipClasses = [];
 
+  // Complete standard list from data.Standard.
+  static List<TutorshipClass> standards = [];
+
+  static bool get hasTutorshipData {
+    return tutorshipClasses.isNotEmpty || standards.isNotEmpty;
+  }
+
+  static void saveTutorshipData({
+    required List<TutorshipClass> tutorshipList,
+    required List<TutorshipClass> standardList,
+  }) {
+    tutorshipClasses = List<TutorshipClass>.from(tutorshipList);
+    standards = List<TutorshipClass>.from(standardList);
+  }
+
+  static void clearTutorshipData() {
+    tutorshipClasses = [];
+    standards = [];
+  }
+
+  static void clearTeacherSession() {
+    accYear = null;
+    branchId = null;
+    branchName = null;
+    employeeId = null;
+    userId = null;
+    teacherName = null;
+    teacherSubject = null;
+
+    clearTutorshipData();
+  }
 }

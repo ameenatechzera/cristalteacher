@@ -1,6 +1,7 @@
 import 'package:cristalteacher/core/appdata/appdata.dart';
 import 'package:cristalteacher/core/functions/functions.dart';
 import 'package:cristalteacher/features/attendance/presentation/screens/attendance_report_screen.dart';
+import 'package:cristalteacher/features/authentication/domain/entities/class_details_entity.dart';
 import 'package:cristalteacher/features/authentication/domain/entities/teacher_dashboard_result.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_teacherdashboard_request.dart';
 import 'package:cristalteacher/features/authentication/domain/parameters/fetch_tutorshipclass_parameter.dart';
@@ -149,7 +150,19 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         }
 
         if (state is FetchTutorshipClassSuccess) {
-          debugPrint("Tutorship Class Loaded");
+          final responseData = state.response.data;
+
+          AppData.saveTutorshipData(
+            tutorshipList: responseData?.tutorshipClass ?? <TutorshipClass>[],
+            standardList: responseData?.standard ?? <TutorshipClass>[],
+          );
+
+          debugPrint('===================================');
+          debugPrint('TUTORSHIP DATA SAVED');
+          debugPrint('Employee ID: ${AppData.employeeId}');
+          debugPrint('Tutorship classes: ${AppData.tutorshipClasses.length}');
+          debugPrint('Standards: ${AppData.standards.length}');
+          debugPrint('===================================');
         }
 
         if (state is FetchTutorshipClassFailure) {

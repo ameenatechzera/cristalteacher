@@ -6,8 +6,10 @@ import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/core/network/api_endpoints.dart';
 import 'package:cristalteacher/core/network/api_helper.dart';
 import 'package:cristalteacher/features/diary/data/models/diary_model.dart';
+import 'package:cristalteacher/features/diary/data/models/diary_update_listing_model.dart';
 import 'package:cristalteacher/features/diary/domain/parameters/fetch_diary_parameter.dart';
 import 'package:cristalteacher/features/diary/domain/parameters/save_diary_parameter.dart';
+import 'package:cristalteacher/features/diary/domain/parameters/update_diary_parameter.dart';
 import 'package:cristalteacher/services/shared_preference_helper.dart';
 import 'package:dio/dio.dart';
 
@@ -15,6 +17,11 @@ abstract class DiaryRemoteDataSource {
   Future<DiaryResponseModel> fetchDiary(FetchDiaryParameter request);
   Future<MasterResponseModel> saveDiary(SaveDiaryParameter params);
   Future<MasterResponseModel> deleteDiary(int id);
+  Future<DiaryUpdateListingResponseModel> fetchDiaryUpdateListing(int diaryId);
+  Future<MasterResponseModel> updateDiary(
+    int diaryId,
+    UpdateDiaryParameter params,
+  );
 }
 
 class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
@@ -607,6 +614,375 @@ class DiaryRemoteDataSourceImpl implements DiaryRemoteDataSource {
       print(e);
       print(stackTrace);
 
+      print('==========================================');
+
+      rethrow;
+    }
+  }
+
+  @override
+  Future<DiaryUpdateListingResponseModel> fetchDiaryUpdateListing(
+    int diaryId,
+  ) async {
+    print('');
+    print('==========================================');
+    print('📘 FETCH DIARY UPDATE LISTING START');
+    print('==========================================');
+
+    try {
+      final pref = SharedPreferenceHelper();
+
+      final String? baseUrl = await pref.getBaseUrl();
+      final String token = await pref.getToken() ?? '';
+      final String? dbName = await pref.getDatabaseName();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Base URL not set');
+      }
+
+      if (token.isEmpty) {
+        throw Exception('Token missing! Please login again.');
+      }
+
+      if (diaryId <= 0) {
+        throw Exception('Invalid diary ID');
+      }
+
+      final String url =
+          '${ApiConstants.getDiaryUpdateListingPath(baseUrl)}/$diaryId';
+
+      print('Diary ID : $diaryId');
+      print('API URL  : $url');
+
+      final Options options = Options(
+        contentType: 'application/json',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          'X-Database-Name': dbName,
+        },
+      );
+
+      print('Headers: ${options.headers}');
+
+      // GET API:
+      // No data and no queryParameters are passed.
+      final Response<dynamic> response = await dio.get(url, options: options);
+
+      print('');
+      print('==========================================');
+      print('📘 FETCH DIARY UPDATE LISTING RESPONSE');
+      print('==========================================');
+      print('Status Code : ${response.statusCode}');
+      print('Response    : ${response.data}');
+      print('==========================================');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.data is! Map) {
+          throw Exception('Invalid API response format');
+        }
+
+        return DiaryUpdateListingResponseModel.fromJson(
+          Map<String, dynamic>.from(response.data as Map),
+        );
+      }
+
+      throw ServerException(
+        errorMessageModel: ErrorMessageModel.fromJson(
+          Map<String, dynamic>.from(response.data as Map),
+        ),
+      );
+    } on DioException catch (e, stackTrace) {
+      print('');
+      print('==========================================');
+      print('❌ FETCH DIARY UPDATE LISTING DIO ERROR');
+      print('==========================================');
+      print('Message  : ${e.message}');
+      print('Status   : ${e.response?.statusCode}');
+      print('Response : ${e.response?.data}');
+      print('URL      : ${e.requestOptions.uri}');
+      print('Method   : ${e.requestOptions.method}');
+      print(stackTrace);
+      print('==========================================');
+
+      if (e.response?.data is Map) {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(
+            Map<String, dynamic>.from(e.response!.data as Map),
+          ),
+        );
+      }
+
+      rethrow;
+    } catch (e, stackTrace) {
+      print('');
+      print('==========================================');
+      print('❌ FETCH DIARY UPDATE LISTING ERROR');
+      print('==========================================');
+      print(e);
+      print(stackTrace);
+      print('==========================================');
+
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MasterResponseModel> updateDiary(
+    int diaryId,
+    UpdateDiaryParameter params,
+  ) async {
+    print('');
+    print('==========================================');
+    print('🟠 UPDATE DIARY START');
+    print('==========================================');
+
+    try {
+      final pref = SharedPreferenceHelper();
+
+      final String? baseUrl = await pref.getBaseUrl();
+      final String token = await pref.getToken() ?? '';
+      final String? dbName = await pref.getDatabaseName();
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Base URL not set');
+      }
+
+      if (token.isEmpty) {
+        throw Exception('Token missing! Please login again.');
+      }
+
+      if (diaryId <= 0) {
+        throw Exception('Invalid diary ID');
+      }
+
+      // Change this endpoint method name according to your ApiConstants.
+      final String url = '${ApiConstants.getUpdateDiaryPath(baseUrl)}/$diaryId';
+
+      print('🟠 Diary ID : $diaryId');
+      print('🟠 Base URL : $baseUrl');
+      print('🟠 DB Name  : $dbName');
+      print('🟠 API URL  : $url');
+
+      // ============================================================
+      // NORMAL FORM FIELDS
+      // ============================================================
+
+      final Map<String, dynamic> data = {
+        'AccYear': params.accYear,
+        'StandardId': params.standardId,
+        'DivisionId': params.divisionId,
+        'SubjectId': params.subjectId,
+        'EmployeeId': params.employeeId,
+        'diaryType': params.diaryType,
+        'diaryTitle': params.diaryTitle,
+        'Description': params.description,
+        'diaryDate': params.diaryDate,
+        'dueDate': params.dueDate,
+        'isActive': params.isActive,
+        'isFavourite': params.isFavourite,
+        'branchId': params.branchId,
+        'ModifiedUser': params.modifiedUser,
+        'videoUrl': params.videoUrl,
+      };
+
+      print('');
+      print('==========================================');
+      print('🟠 UPDATE FORM FIELDS');
+      print('==========================================');
+
+      data.forEach((key, value) {
+        print('$key : $value');
+      });
+
+      final FormData formData = FormData.fromMap(data);
+
+      // ============================================================
+      // FILES
+      // ============================================================
+
+      print('');
+      print('==========================================');
+      print('🟡 PROCESSING UPDATE FILES');
+      print('==========================================');
+      print('Files Found: ${params.files.length}');
+
+      for (int i = 0; i < params.files.length; i++) {
+        final String fileString = params.files[i];
+
+        if (fileString.trim().isEmpty) {
+          print('⚠️ File ${i + 1} is empty. Skipping.');
+          continue;
+        }
+
+        String base64String = fileString;
+        String fileName = 'diary_file_${i + 1}';
+
+        if (fileString.startsWith('data:')) {
+          final int commaIndex = fileString.indexOf(',');
+
+          if (commaIndex == -1) {
+            throw Exception('Invalid Base64 file format for file ${i + 1}');
+          }
+
+          final String header = fileString.substring(0, commaIndex);
+          base64String = fileString.substring(commaIndex + 1);
+
+          print('🟡 File ${i + 1} Header: $header');
+
+          if (header.contains('image/jpeg')) {
+            fileName = 'diary_file_${i + 1}.jpg';
+          } else if (header.contains('image/png')) {
+            fileName = 'diary_file_${i + 1}.png';
+          } else if (header.contains('image/webp')) {
+            fileName = 'diary_file_${i + 1}.webp';
+          } else if (header.contains('audio/mpeg') ||
+              header.contains('audio/mp3')) {
+            fileName = 'diary_file_${i + 1}.mp3';
+          } else if (header.contains('audio/mp4') ||
+              header.contains('audio/x-m4a')) {
+            fileName = 'diary_file_${i + 1}.m4a';
+          } else if (header.contains('audio/wav') ||
+              header.contains('audio/x-wav')) {
+            fileName = 'diary_file_${i + 1}.wav';
+          } else if (header.contains('audio/aac')) {
+            fileName = 'diary_file_${i + 1}.aac';
+          } else if (header.contains('audio/ogg')) {
+            fileName = 'diary_file_${i + 1}.ogg';
+          } else if (header.contains('audio/amr')) {
+            fileName = 'diary_file_${i + 1}.amr';
+          } else {
+            throw Exception(
+              'Unsupported file type.\n'
+              'File: ${i + 1}\n'
+              'Header: $header',
+            );
+          }
+        } else {
+          print(
+            '⚠️ File ${i + 1} has no data URI header. '
+            'Using the Base64 value directly.',
+          );
+        }
+
+        try {
+          final List<int> bytes = base64Decode(base64String);
+
+          formData.files.add(
+            MapEntry(
+              'files[]',
+              MultipartFile.fromBytes(bytes, filename: fileName),
+            ),
+          );
+
+          print('🟢 File added: $fileName | Bytes: ${bytes.length}');
+        } on FormatException {
+          throw Exception('Invalid Base64 content for file ${i + 1}');
+        }
+      }
+
+      // ============================================================
+      // DEBUG FORMDATA
+      // ============================================================
+
+      print('');
+      print('==========================================');
+      print('🟠 UPDATE FORMDATA FIELDS');
+      print('==========================================');
+
+      for (final field in formData.fields) {
+        print('${field.key} : ${field.value}');
+      }
+
+      print('');
+      print('==========================================');
+      print('🟠 UPDATE FORMDATA FILES');
+      print('==========================================');
+
+      for (final file in formData.files) {
+        print(
+          'Key: ${file.key} | '
+          'Filename: ${file.value.filename} | '
+          'ContentType: ${file.value.contentType}',
+        );
+      }
+
+      final Options options = Options(
+        contentType: 'multipart/form-data',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          'X-Database-Name': dbName,
+        },
+      );
+
+      print('');
+      print('==========================================');
+      print('🟠 CALLING UPDATE DIARY API');
+      print('==========================================');
+
+      final Response<dynamic> response = await dio.post(
+        url,
+        data: formData,
+        options: options,
+      );
+
+      print('');
+      print('==========================================');
+      print('🟠 UPDATE DIARY RESPONSE');
+      print('==========================================');
+      print('Status Code : ${response.statusCode}');
+      print('Response    : ${response.data}');
+      print('==========================================');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.data is! Map) {
+          throw Exception('Invalid update diary response format');
+        }
+
+        return MasterResponseModel.fromJson(
+          Map<String, dynamic>.from(response.data as Map),
+        );
+      }
+
+      if (response.data is Map) {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(
+            Map<String, dynamic>.from(response.data as Map),
+          ),
+        );
+      }
+
+      throw Exception('Update diary failed with status ${response.statusCode}');
+    } on DioException catch (e, stackTrace) {
+      print('');
+      print('==========================================');
+      print('❌ UPDATE DIARY DIO ERROR');
+      print('==========================================');
+      print('Message  : ${e.message}');
+      print('Status   : ${e.response?.statusCode}');
+      print('Response : ${e.response?.data}');
+      print('URL      : ${e.requestOptions.uri}');
+      print('Method   : ${e.requestOptions.method}');
+      print(stackTrace);
+      print('==========================================');
+
+      if (e.response?.data is Map) {
+        throw ServerException(
+          errorMessageModel: ErrorMessageModel.fromJson(
+            Map<String, dynamic>.from(e.response!.data as Map),
+          ),
+        );
+      }
+
+      rethrow;
+    } catch (e, stackTrace) {
+      print('');
+      print('==========================================');
+      print('❌ UPDATE DIARY ERROR');
+      print('==========================================');
+      print(e);
+      print(stackTrace);
       print('==========================================');
 
       rethrow;

@@ -73,6 +73,14 @@ class _ExamScreenState extends State<ExamScreen> {
       accYear: AppData.accYear ?? '',
       branchId: AppData.branchId ?? 1,
       standardId: selectedStandardId,
+      divisionId: null,
+      subjectId: null,
+      examTermId: null,
+      examTypeId: null,
+
+      // Logged-in teacher.
+      employeeId: AppData.employeeId,
+
       fromDate: selectedFromDate,
       toDate: selectedToDate,
       employeeId: AppData.employeeId

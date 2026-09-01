@@ -4,8 +4,10 @@ import 'package:cristalteacher/core/models/master_response_model.dart';
 import 'package:cristalteacher/core/utils/typedef.dart';
 import 'package:cristalteacher/features/diary/data/datasources/diary_remote_data_source.dart';
 import 'package:cristalteacher/features/diary/domain/entities/diary_entity.dart';
+import 'package:cristalteacher/features/diary/domain/entities/update_listing_entity.dart';
 import 'package:cristalteacher/features/diary/domain/parameters/fetch_diary_parameter.dart';
 import 'package:cristalteacher/features/diary/domain/parameters/save_diary_parameter.dart';
+import 'package:cristalteacher/features/diary/domain/parameters/update_diary_parameter.dart';
 import 'package:cristalteacher/features/diary/domain/repositories/diary_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -48,6 +50,37 @@ class DiaryRepositoryImpl implements DiaryRepository {
   ResultFuture<MasterResponseModel> deleteDiary(int id) async {
     try {
       final response = await _remoteDataSource.deleteDiary(id);
+
+      return Right(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.errorMessageModel.statusMessage));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<DiaryUpdateListingEntity> fetchDiaryUpdateListing(
+    int diaryId,
+  ) async {
+    try {
+      final response = await _remoteDataSource.fetchDiaryUpdateListing(diaryId);
+
+      return Right(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.errorMessageModel.statusMessage));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  ResultFuture<MasterResponseModel> updateDiary(
+    UpdateDiaryParameter params,
+    int diaryId,
+  ) async {
+    try {
+      final response = await _remoteDataSource.updateDiary(diaryId, params);
 
       return Right(response);
     } on ServerException catch (e) {

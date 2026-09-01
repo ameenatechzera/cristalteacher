@@ -23,6 +23,8 @@ import 'package:cristalteacher/features/diary/domain/repositories/diary_reposito
 import 'package:cristalteacher/features/diary/domain/usecases/delete_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/fetch_diary_usecase.dart';
 import 'package:cristalteacher/features/diary/domain/usecases/save_diary_usecase.dart';
+import 'package:cristalteacher/features/diary/domain/usecases/update_diary_usecase.dart';
+import 'package:cristalteacher/features/diary/domain/usecases/updatelisting_usecase.dart';
 import 'package:cristalteacher/features/diary/presentation/cubit/diary_cubit.dart';
 import 'package:cristalteacher/features/earlygoing/data/datasources/gatepass_remote_data_source.dart';
 import 'package:cristalteacher/features/earlygoing/data/repositories/gatepass_repository_impl.dart';
@@ -78,7 +80,8 @@ Future<void> init() async {
       fetchSchoolUseCase: sl(),
       getBranchUseCase: sl(),
       fetchTutorshipClassUseCase: sl(),
-      fetchAccYearUseCase: sl(), fetchDashboardUseCase: sl(),
+      fetchAccYearUseCase: sl(),
+      fetchDashboardUseCase: sl(),
     ),
   );
 
@@ -93,7 +96,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FetchAccYearUseCase(sl()));
   sl.registerLazySingleton(() => FetchDashboardUseCase(sl()));
 
-
   /// Repository
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
 
@@ -107,12 +109,18 @@ Future<void> init() async {
       fetchDiaryUseCase: sl(),
       saveDiaryUseCase: sl(),
       deleteDiaryUseCase: sl(),
+      fetchDiaryUpdateListingUseCase: sl(),
+      updateDiaryUseCase: sl(),
     ),
   );
 
   sl.registerLazySingleton<FetchDiaryUseCase>(() => FetchDiaryUseCase(sl()));
   sl.registerLazySingleton<SaveDiaryUseCase>(() => SaveDiaryUseCase(sl()));
   sl.registerLazySingleton<DeleteDiaryUseCase>(() => DeleteDiaryUseCase(sl()));
+  sl.registerLazySingleton<FetchDiaryUpdateListingUseCase>(
+    () => FetchDiaryUpdateListingUseCase(sl()),
+  );
+  sl.registerLazySingleton<UpdateDiaryUseCase>(() => UpdateDiaryUseCase(sl()));
 
   sl.registerLazySingleton<DiaryRepository>(() => DiaryRepositoryImpl(sl()));
 
